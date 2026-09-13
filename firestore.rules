@@ -12,22 +12,18 @@ rules_version = '2';
 // pero evita que cualquiera cambie resultados o borre peñistas por error
 // o de broma.
 
-function estaAutenticado() {
-  return request.auth != null;
-}
-
-// "database" se recibe como parámetro porque esta función está declarada
-// fuera de "match /databases/{database}/documents": esa variable de ruta
-// solo existe dentro de ese bloque, no se hereda automáticamente en
-// funciones de nivel superior.
-function pinValido(database) {
-  return estaAutenticado() &&
-    request.resource.data.adminPin != null &&
-    request.resource.data.adminPin == get(/databases/$(database)/documents/config/general).data.pin;
-}
-
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function estaAutenticado() {
+      return request.auth != null;
+    }
+
+    function pinValido() {
+      return estaAutenticado() &&
+        request.resource.data.adminPin != null &&
+        request.resource.data.adminPin == get(/databases/$(database)/documents/config/general).data.pin;
+    }
 
     match /config/general {
       allow read: if estaAutenticado();
@@ -35,7 +31,7 @@ service cloud.firestore {
       // (es la primera vez que se despliega la app). A partir de ahí,
       // cualquier cambio requiere el PIN correcto.
       allow create: if estaAutenticado() && !exists(/databases/$(database)/documents/config/general);
-      allow update: if pinValido(database);
+      allow update: if pinValido();
     }
 
     // Nota: el nombre de colección usa "penistas" (sin ñ) porque el lenguaje
@@ -43,7 +39,7 @@ service cloud.firestore {
     // de ruta. El resto de la app sigue mostrando y llamando "peñistas".
     match /penistas/{penistaId} {
       allow read: if estaAutenticado();
-      allow create, update: if pinValido(database);
+      allow create, update: if pinValido();
     }
 
     match /convocatorias/{convocatoriaId} {
@@ -54,7 +50,7 @@ service cloud.firestore {
       // documento todavía no existía.
       allow create, update: if estaAutenticado() &&
         ((!('encargados' in request.resource.data) && !('resultado' in request.resource.data))
-          || pinValido(database));
+          || pinValido());
 
       match /respuestas/{penistaId} {
         allow read: if estaAutenticado();
@@ -65,7 +61,7 @@ service cloud.firestore {
         allow read: if estaAutenticado();
         allow create, delete: if estaAutenticado();
         // Confirmar/desconfirmar un invitado para el aforo es cosa de admin.
-        allow update: if pinValido(database);
+        allow update: if pinValido();
       }
     }
   }
