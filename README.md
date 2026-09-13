@@ -83,7 +83,7 @@ nombre de la peña y el PIN; desde **Peñistas**, da de alta a la plantilla real
   Los invitados **nunca** se añaden solos: el admin decide a quién confirma
   (pestaña Admin → Convocatoria → "Completar aforo con invitados"), respetando el
   orden de apunte como guía.
-- **Puntos**: victoria 3, empate 2, derrota 1, no jugar 0. Cerveza postpartido +1
+- **Puntos**: victoria 3, empate 2, derrota 1, no jugar 0. Cerveza postpartido +0,5
   (acumulable). Los invitados no puntúan ni salen en la clasificación.
 - **Encargados**: el admin sortea 2 peñistas entre los confirmados para jugar ese
   día (nunca invitados); se puede repetir el sorteo.

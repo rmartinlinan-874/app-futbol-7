@@ -8,7 +8,7 @@ export default function ClasificacionScreen({ convocatorias, peñistas }) {
     <section className="tarjeta">
       <h2 className="titulo-seccion">Clasificación</h2>
       <p className="subtitulo">
-        Victoria 3 pts · Empate 2 pts · Derrota 1 pt · Cerveza postpartido +1 pt
+        Victoria 3 pts · Empate 2 pts · Derrota 1 pt · Cerveza postpartido +0,5 pts
       </p>
 
       {clasificacion.length === 0 ? (

@@ -1,5 +1,5 @@
 export const PUNTOS = { victoria: 3, empate: 2, derrota: 1 }
-export const PUNTO_CERVEZA = 1
+export const PUNTO_CERVEZA = 0.5
 
 /**
  * Recorre los resultados registrados de todas las convocatorias y devuelve

@@ -232,7 +232,7 @@ export default function AdminConvocatoria({ idConvocatoria, convocatoria, respue
             </div>
 
             <label className="campo-label" style={{ marginTop: 14 }}>
-              Se quedaron a la cerveza (+1 punto extra)
+              Se quedaron a la cerveza (+0,5 puntos extra)
             </label>
             {participantes
               .filter((p) => p.tipo === 'peñista')

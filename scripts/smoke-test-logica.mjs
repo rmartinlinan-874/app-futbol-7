@@ -71,7 +71,7 @@ const convocatorias = [
 ]
 const clasificacion = calcularClasificacion(convocatorias, peñistas)
 const porId = Object.fromEntries(clasificacion.map((c) => [c.id, c]))
-assert.equal(porId.a.puntos, 3 + 1 + 2, 'Ana: victoria(3) + cerveza(1) + empate(2)')
+assert.equal(porId.a.puntos, 3 + 0.5 + 2, 'Ana: victoria(3) + cerveza(0.5) + empate(2)')
 assert.equal(porId.b.puntos, 1 + 2, 'Bea: derrota(1) + empate(2)')
 assert.equal(porId.c.puntos, 0, 'Carlos no jugó, 0 puntos')
 assert.equal(porId.a.partidosJugados, 2)
