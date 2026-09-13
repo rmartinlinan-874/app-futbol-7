@@ -28,6 +28,7 @@ export default function TopBar({ nombrePeña, peñista, onCambiarPeñista }) {
           title="Cambiar tu foto"
         >
           <Avatar nombre={peñista?.nombre ?? '?'} fotoURL={peñista?.fotoURL} tamaño={36} />
+          <span className="avatar-boton-insignia">📷</span>
         </button>
         <input
           ref={inputRef}

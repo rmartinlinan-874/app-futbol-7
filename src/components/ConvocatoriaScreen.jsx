@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { formatearFechaLarga, horaPartidoTexto } from '../lib/dates'
 import { calcularAforo, AFORO_MIN, AFORO_MAX } from '../lib/aforo'
 import { marcarRespuesta, apuntarInvitado, quitarInvitado } from '../lib/actions'
+import Avatar from './Avatar'
 
 export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas, convocatoria, respuestas, invitados }) {
   const [nombreInvitado, setNombreInvitado] = useState('')
@@ -14,7 +15,11 @@ export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas
   const porConfirmar = Math.max(0, totalActivos - respuestas.length)
 
   const aforo = calcularAforo({ respuestasJuego: juegan, invitados })
-  const nombreDe = (id) => peñistas.find((p) => p.id === id)?.nombre ?? '—'
+  const peñistaDe = (id) => peñistas.find((p) => p.id === id)
+  const nombreDe = (id) => peñistaDe(id)?.nombre ?? '—'
+
+  const activos = peñistas.filter((p) => p.activo)
+  const pendientes = activos.filter((p) => !respuestas.some((r) => r.id === p.id))
 
   async function elegir(juega) {
     setEnviando(true)
@@ -105,6 +110,44 @@ export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas
         </p>
       )}
 
+      {juegan.length > 0 && (
+        <section className="tarjeta">
+          <h2 className="titulo-seccion">Apuntados</h2>
+          <ul className="lista" style={{ marginTop: 8 }}>
+            {juegan.map((r) => {
+              const p = peñistaDe(r.id)
+              const enEspera = aforo.peñistasEnEspera.some((x) => x.id === r.id)
+              return (
+                <li key={r.id} className="lista-item">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Avatar nombre={p?.nombre ?? '?'} fotoURL={p?.fotoURL} tamaño={28} />
+                    {p?.nombre ?? '—'}
+                  </div>
+                  {enEspera && <span className="etiqueta-pill espera">Lista de espera</span>}
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
+
+      {pendientes.length > 0 && (
+        <section className="tarjeta">
+          <h2 className="titulo-seccion">Por confirmar</h2>
+          <p className="subtitulo">Todavía no han dicho si juegan.</p>
+          <ul className="lista" style={{ marginTop: 8 }}>
+            {pendientes.map((p) => (
+              <li key={p.id} className="lista-item">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Avatar nombre={p.nombre} fotoURL={p.fotoURL} tamaño={28} />
+                  {p.nombre}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {convocatoria?.encargados?.length === 2 && (
         <section className="tarjeta">
           <h2 className="titulo-seccion">Encargados de montar los equipos</h2>
@@ -162,18 +205,6 @@ export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas
         )}
       </section>
 
-      {aforo.peñistasEnEspera.length > 0 && (
-        <section className="tarjeta">
-          <h2 className="titulo-seccion">Lista de espera (peñistas)</h2>
-          <ul className="lista" style={{ marginTop: 8 }}>
-            {aforo.peñistasEnEspera.map((r) => (
-              <li key={r.id} className="lista-item">
-                {nombreDe(r.id)}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </>
   )
 }
