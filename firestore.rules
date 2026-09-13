@@ -1,0 +1,72 @@
+rules_version = '2';
+
+// Reglas para App Peña.
+//
+// No hay cuentas de usuario reales: todos los peñistas usan autenticación
+// anónima de Firebase (silenciosa, sin pantalla de login) solo para que
+// estas reglas puedan exigir "visitante autenticado" y así filtrar bots.
+// El panel de admin está protegido por un PIN sencillo (ver README /
+// especificación): cada escritura "de admin" debe incluir un campo
+// adminPin que estas reglas comparan con config/general.pin. No es
+// seguridad de nivel bancario -es un PIN compartido en una peña de fútbol-
+// pero evita que cualquiera cambie resultados o borre peñistas por error
+// o de broma.
+
+function estaAutenticado() {
+  return request.auth != null;
+}
+
+// "database" se recibe como parámetro porque esta función está declarada
+// fuera de "match /databases/{database}/documents": esa variable de ruta
+// solo existe dentro de ese bloque, no se hereda automáticamente en
+// funciones de nivel superior.
+function pinValido(database) {
+  return estaAutenticado() &&
+    request.resource.data.adminPin != null &&
+    request.resource.data.adminPin == get(/databases/$(database)/documents/config/general).data.pin;
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /config/general {
+      allow read: if estaAutenticado();
+      // Bootstrap: si el documento no existe aún, se puede crear sin PIN
+      // (es la primera vez que se despliega la app). A partir de ahí,
+      // cualquier cambio requiere el PIN correcto.
+      allow create: if estaAutenticado() && !exists(/databases/$(database)/documents/config/general);
+      allow update: if pinValido(database);
+    }
+
+    // Nota: el nombre de colección usa "penistas" (sin ñ) porque el lenguaje
+    // de reglas de Firestore no admite caracteres no ASCII en los segmentos
+    // de ruta. El resto de la app sigue mostrando y llamando "peñistas".
+    match /penistas/{penistaId} {
+      allow read: if estaAutenticado();
+      allow create, update: if pinValido(database);
+    }
+
+    match /convocatorias/{convocatoriaId} {
+      allow read: if estaAutenticado();
+      // Se crea automáticamente al abrir la app (sin datos sensibles). La misma
+      // condición se aplica a creación y actualización para que no se pueda
+      // colar un "encargados" o "resultado" sin PIN simplemente porque el
+      // documento todavía no existía.
+      allow create, update: if estaAutenticado() &&
+        ((!('encargados' in request.resource.data) && !('resultado' in request.resource.data))
+          || pinValido(database));
+
+      match /respuestas/{penistaId} {
+        allow read: if estaAutenticado();
+        allow write: if estaAutenticado();
+      }
+
+      match /invitados/{invitadoId} {
+        allow read: if estaAutenticado();
+        allow create, delete: if estaAutenticado();
+        // Confirmar/desconfirmar un invitado para el aforo es cosa de admin.
+        allow update: if pinValido(database);
+      }
+    }
+  }
+}
