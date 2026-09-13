@@ -1,3 +1,5 @@
+import Avatar from './Avatar'
+
 export default function Identificacion({ nombrePeña, peñistas, onElegir }) {
   const activos = peñistas.filter((p) => p.activo)
 
@@ -17,6 +19,7 @@ export default function Identificacion({ nombrePeña, peñistas, onElegir }) {
         <div className="grid-nombres">
           {activos.map((p) => (
             <button key={p.id} onClick={() => onElegir(p)}>
+              <Avatar nombre={p.nombre} fotoURL={p.fotoURL} tamaño={32} />
               {p.nombre}
             </button>
           ))}

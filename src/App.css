@@ -28,6 +28,23 @@
   cursor: pointer;
 }
 
+.barra-superior-quien {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar-boton {
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 50% !important;
+  line-height: 0;
+}
+
+.avatar-boton:disabled {
+  opacity: 0.6;
+}
+
 .contenido {
   flex: 1;
   padding: 16px;
@@ -216,12 +233,16 @@ h2.titulo-seccion {
 }
 
 .grid-nombres button {
-  padding: 14px 8px;
+  padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid var(--borde);
   background: var(--tarjeta);
   font-weight: 600;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
 }
 
 .grid-nombres button:active {

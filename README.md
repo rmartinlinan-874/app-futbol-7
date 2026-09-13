@@ -87,6 +87,12 @@ nombre de la peña y el PIN; desde **Peñistas**, da de alta a la plantilla real
   (acumulable). Los invitados no puntúan ni salen en la clasificación.
 - **Encargados**: el admin sortea 2 peñistas entre los confirmados para jugar ese
   día (nunca invitados); se puede repetir el sorteo.
+- **Fotos de perfil**: cualquier peñista puede subir o cambiar la foto de
+  cualquiera (no hay contraseñas, ver "Seguridad" más abajo) tocando su
+  avatar en la barra superior. Se guardan como imagen pequeña incrustada en
+  el propio documento del peñista en Firestore -sin Firebase Storage, que
+  desde 2024 requiere plan de pago (Blaze)-, así que la app entera sigue
+  funcionando en el plan gratuito (Spark).
 
 ## Seguridad (PIN de admin)
 

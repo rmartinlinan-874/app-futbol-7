@@ -61,6 +61,9 @@ export default function App() {
   }
 
   const nombrePeña = config?.nombrePeña || NOMBRE_PEÑA_POR_DEFECTO
+  // peñista (localStorage) solo guarda {id, nombre} de cuando se eligió;
+  // aquí se cruza con la lista en vivo para tener también la foto actual.
+  const peñistaActual = peñista ? (peñistas.find((p) => p.id === peñista.id) ?? peñista) : null
 
   const panelAdmin = esAdmin ? (
     <AdminScreen
@@ -109,13 +112,13 @@ export default function App() {
 
   return (
     <>
-      <TopBar nombrePeña={nombrePeña} peñista={peñista} onCambiarPeñista={() => setPeñista(null)} />
+      <TopBar nombrePeña={nombrePeña} peñista={peñistaActual} onCambiarPeñista={() => setPeñista(null)} />
 
       <main className="contenido">
         {pantalla === 'convocatoria' && (
           <ConvocatoriaScreen
             idConvocatoria={idConvocatoria}
-            peñista={peñista}
+            peñista={peñistaActual}
             peñistas={peñistas}
             convocatoria={convocatoria}
             respuestas={respuestas}
