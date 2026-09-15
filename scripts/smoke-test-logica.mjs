@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { calcularAforo, AFORO_MAX, AFORO_MIN } from '../src/lib/aforo.js'
-import { calcularClasificacion } from '../src/lib/points.js'
+import { calcularClasificacion, calcularVecesEncargado } from '../src/lib/points.js'
+import { elegirCapitanes } from '../src/lib/encargados.js'
 import { idConvocatoriaActiva, lunesConvocatoriaActiva } from '../src/lib/dates.js'
 
 const t = (ms) => ({ toMillis: () => ms })
@@ -76,6 +77,42 @@ assert.equal(porId.b.puntos, 1 + 2, 'Bea: derrota(1) + empate(2)')
 assert.equal(porId.c.puntos, 0, 'Carlos no jugó, 0 puntos')
 assert.equal(porId.a.partidosJugados, 2)
 console.log('OK: clasificación y puntos')
+
+// --- encargados: los 2 primeros de la clasificación, con desempates ---
+const conEncargados = [
+  ...convocatorias,
+  { encargados: ['a', 'b'] },
+  { encargados: ['b', 'c'] },
+]
+const veces = calcularVecesEncargado(conEncargados)
+assert.equal(veces.get('a'), 1)
+assert.equal(veces.get('b'), 2)
+assert.equal(veces.get('c'), 1)
+console.log('OK: veces encargado')
+
+// Por puntos: Ana (3.5) y Bea (3) por delante de Carlos (0).
+const puntosPorId = new Map(clasificacion.map((c) => [c.id, c.puntos]))
+assert.deepEqual(
+  elegirCapitanes(['a', 'b', 'c'], puntosPorId, new Map()),
+  ['a', 'b'],
+  'los dos con más puntos',
+)
+
+// Empate a puntos: gana quien menos veces haya sido encargado.
+const puntosEmpatados = new Map([['x', 5], ['y', 5], ['z', 5]])
+const vecesDesempate = new Map([['x', 2], ['y', 0], ['z', 1]])
+assert.deepEqual(
+  elegirCapitanes(['x', 'y', 'z'], puntosEmpatados, vecesDesempate),
+  ['y', 'z'],
+  'con puntos iguales, ganan los que menos veces han sido encargados',
+)
+
+// Empate total (puntos y veces): sale un sorteo válido entre los empatados.
+const elegidosPorSorteo = elegirCapitanes(['x', 'y', 'z'], puntosEmpatados, new Map())
+assert.equal(elegidosPorSorteo.length, 2)
+assert.equal(elegidosPorSorteo.every((id) => ['x', 'y', 'z'].includes(id)), true)
+assert.notEqual(elegidosPorSorteo[0], elegidosPorSorteo[1])
+console.log('OK: elección de encargados')
 
 // --- fechas: convocatoria activa siempre es un lunes ---
 for (const fecha of [

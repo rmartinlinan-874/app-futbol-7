@@ -46,15 +46,12 @@ export async function confirmarInvitado(idConvocatoria, invitadoId, confirmado, 
   })
 }
 
-export async function sortearEncargados(idConvocatoria, candidatosIds, pin) {
-  const barajados = [...candidatosIds].sort(() => Math.random() - 0.5)
-  const encargados = barajados.slice(0, 2)
+export async function guardarEncargados(idConvocatoria, encargadosIds, pin) {
   await setDoc(
     doc(db, 'convocatorias', idConvocatoria),
-    { encargados, adminPin: pin },
+    { encargados: encargadosIds, adminPin: pin },
     { merge: true },
   )
-  return encargados
 }
 
 export async function registrarResultado(idConvocatoria, { equipoA, equipoB, ganador, cerveza }, pin) {

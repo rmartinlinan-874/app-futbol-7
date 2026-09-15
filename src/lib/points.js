@@ -43,3 +43,17 @@ export function calcularClasificacion(convocatorias, peñistas) {
     }))
     .sort((a, b) => b.puntos - a.puntos || a.nombre.localeCompare(b.nombre, 'es'))
 }
+
+/**
+ * Cuántas veces ha sido cada peñista encargado de montar los equipos, a
+ * partir del historial de convocatorias (campo "encargados" de cada una).
+ */
+export function calcularVecesEncargado(convocatorias) {
+  const veces = new Map()
+  for (const conv of convocatorias) {
+    for (const id of conv.encargados ?? []) {
+      veces.set(id, (veces.get(id) ?? 0) + 1)
+    }
+  }
+  return veces
+}

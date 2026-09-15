@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { AFORO_MAX, calcularAforo } from '../../lib/aforo'
+import { calcularClasificacion, calcularVecesEncargado } from '../../lib/points'
+import { elegirCapitanes } from '../../lib/encargados'
 import {
   confirmarInvitado,
-  sortearEncargados,
+  guardarEncargados,
   registrarResultado,
   marcarRespuesta,
   borrarRespuesta,
@@ -27,10 +29,27 @@ function estadoInicialResultado(resultadoGuardado) {
   }
 }
 
-export default function AdminConvocatoria({ idConvocatoria, convocatoria, respuestas, invitados, peñistas, pin }) {
+export default function AdminConvocatoria({
+  idConvocatoria,
+  convocatoria,
+  respuestas,
+  invitados,
+  peñistas,
+  convocatorias,
+  pin,
+}) {
   const nombreDe = (id) => peñistas.find((p) => p.id === id)?.nombre ?? '—'
   const juegan = respuestas.filter((r) => r.juega)
   const aforo = calcularAforo({ respuestasJuego: juegan, invitados })
+
+  // Para elegir encargados se usa la clasificación y el historial de
+  // "veces encargado" de ANTES de esta convocatoria (si ya tuviera
+  // resultado o encargados propios, no deben influir en su propia elección).
+  const convocatoriasAnteriores = convocatorias.filter((c) => c.id !== idConvocatoria)
+  const puntosPorId = new Map(
+    calcularClasificacion(convocatoriasAnteriores, peñistas).map((c) => [c.id, c.puntos]),
+  )
+  const vecesEncargadoPorId = calcularVecesEncargado(convocatoriasAnteriores)
 
   const [sorteando, setSorteando] = useState(false)
   const [guardandoInvitado, setGuardandoInvitado] = useState(null)
@@ -56,14 +75,15 @@ export default function AdminConvocatoria({ idConvocatoria, convocatoria, respue
     }
   }
 
-  async function reSortear() {
+  async function elegirEncargados() {
     setSorteando(true)
     try {
-      await sortearEncargados(
-        idConvocatoria,
+      const elegidos = elegirCapitanes(
         aforo.peñistasJuegan.map((r) => r.id),
-        pin,
+        puntosPorId,
+        vecesEncargadoPorId,
       )
+      await guardarEncargados(idConvocatoria, elegidos, pin)
     } finally {
       setSorteando(false)
     }
@@ -184,7 +204,11 @@ export default function AdminConvocatoria({ idConvocatoria, convocatoria, respue
 
       <section className="tarjeta">
         <h2 className="titulo-seccion">Encargados de montar los equipos</h2>
-        <p className="subtitulo">Se sortean entre los {aforo.peñistasJuegan.length} peñistas confirmados (nunca invitados).</p>
+        <p className="subtitulo">
+          Los dos primeros de la clasificación entre los {aforo.peñistasJuegan.length} peñistas
+          confirmados (nunca invitados). En caso de empate a puntos, quien menos veces haya sido
+          encargado; si el empate persiste, por sorteo.
+        </p>
         {convocatoria?.encargados?.length === 2 && (
           <p style={{ fontWeight: 600, marginTop: 8 }}>
             {nombreDe(convocatoria.encargados[0])} y {nombreDe(convocatoria.encargados[1])}
@@ -194,9 +218,9 @@ export default function AdminConvocatoria({ idConvocatoria, convocatoria, respue
           className="boton boton-primario"
           style={{ marginTop: 10 }}
           disabled={sorteando || aforo.peñistasJuegan.length < 2}
-          onClick={reSortear}
+          onClick={elegirEncargados}
         >
-          {convocatoria?.encargados?.length === 2 ? '🎲 Repetir sorteo' : '🎲 Sortear encargados'}
+          {convocatoria?.encargados?.length === 2 ? '🔁 Recalcular encargados' : '📋 Elegir encargados'}
         </button>
       </section>
 

@@ -92,8 +92,10 @@ nombre de la peña y el PIN; desde **Peñistas**, da de alta a la plantilla real
   como A/B, es solo una cuestión de etiqueta).
 - **Puntos**: victoria 3, empate 2, derrota 1, no jugar 0. Cerveza postpartido +0,5
   (acumulable). Los invitados no puntúan ni salen en la clasificación.
-- **Encargados**: el admin sortea 2 peñistas entre los confirmados para jugar ese
-  día (nunca invitados); se puede repetir el sorteo.
+- **Encargados**: son los dos primeros de la clasificación entre los peñistas
+  confirmados para jugar ese día (nunca invitados). Empate a puntos: gana quien
+  menos veces haya sido encargado antes. Si el empate persiste, por sorteo entre
+  los empatados.
 - **Fotos de perfil**: cualquier peñista puede subir o cambiar la foto de
   cualquiera (no hay contraseñas, ver "Seguridad" más abajo) tocando su
   avatar en la barra superior. Se guardan como imagen pequeña incrustada en

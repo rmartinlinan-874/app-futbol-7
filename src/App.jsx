@@ -72,6 +72,7 @@ export default function App() {
       respuestas={respuestas}
       invitados={invitados}
       peñistas={peñistas}
+      convocatorias={convocatorias}
       config={config}
       pin={pin}
       onCambiarPin={entrar}

@@ -15,6 +15,7 @@ export default function AdminScreen({
   respuestas,
   invitados,
   peñistas,
+  convocatorias,
   config,
   pin,
   onCambiarPin,
@@ -43,6 +44,7 @@ export default function AdminScreen({
           respuestas={respuestas}
           invitados={invitados}
           peñistas={peñistas}
+          convocatorias={convocatorias}
           pin={pin}
         />
       )}
