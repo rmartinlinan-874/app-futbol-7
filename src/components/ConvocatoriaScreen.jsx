@@ -83,7 +83,7 @@ export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas
 
       <section className="contadores">
         <div className="contador verde">
-          <span className="numero">{juegan.length}</span>
+          <span className="numero">{juegan.length + aforo.invitadosJuegan.length}</span>
           <span className="etiqueta">Juegan</span>
         </div>
         <div className="contador rojo">
@@ -95,7 +95,7 @@ export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas
           <span className="etiqueta">Por confirmar (de {totalActivos})</span>
         </div>
         <div className="contador">
-          <span className="numero">{invitados.length}</span>
+          <span className="numero">{invitados.length - aforo.invitadosJuegan.length}</span>
           <span className="etiqueta">Invitados apuntados</span>
         </div>
       </section>
@@ -110,7 +110,7 @@ export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas
         </p>
       )}
 
-      {juegan.length > 0 && (
+      {(juegan.length > 0 || aforo.invitadosJuegan.length > 0) && (
         <section className="tarjeta">
           <h2 className="titulo-seccion">Apuntados</h2>
           <ul className="lista" style={{ marginTop: 8 }}>
@@ -127,6 +127,15 @@ export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas
                 </li>
               )
             })}
+            {aforo.invitadosJuegan.map((inv) => (
+              <li key={inv.id} className="lista-item">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Avatar nombre={inv.nombre} tamaño={28} />
+                  {inv.nombre}
+                </div>
+                <span className="etiqueta-pill">invitado</span>
+              </li>
+            ))}
           </ul>
         </section>
       )}
