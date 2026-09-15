@@ -9,20 +9,28 @@ export function formatId(date) {
 }
 
 /**
- * Devuelve la fecha (a medianoche) del lunes de la convocatoria activa:
- * si hoy es lunes y aún no ha llegado la hora del partido, es hoy;
- * en cualquier otro caso, el próximo lunes.
+ * Devuelve la fecha (a medianoche) del lunes de la convocatoria activa.
+ *
+ * De lunes a jueves, la convocatoria activa sigue siendo la del lunes de
+ * esa misma semana (el partido ya jugado o a punto de jugarse): así el
+ * admin tiene hasta el jueves para registrar el resultado y las cervezas
+ * sin que la app salte ya a la semana siguiente. La convocatoria del
+ * próximo lunes no se abre hasta el viernes.
  */
 export function lunesConvocatoriaActiva(ahora = new Date()) {
-  const dia = ahora.getDay() // 0=domingo, 1=lunes, ...
-  const esLunesAntesDelPartido =
-    dia === 1 &&
-    (ahora.getHours() < HORA_PARTIDO.horas ||
-      (ahora.getHours() === HORA_PARTIDO.horas && ahora.getMinutes() < HORA_PARTIDO.minutos))
+  const dia = ahora.getDay() // 0=domingo, 1=lunes, ..., 5=viernes, 6=sábado
+  const diasDesdeLunes = (dia + 6) % 7
+  const lunesDeEstaSemana = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() - diasDesdeLunes)
 
-  const diasHastaLunes = esLunesAntesDelPartido ? 0 : ((8 - dia) % 7 || 7)
-  const lunes = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() + diasHastaLunes)
-  return lunes
+  const abreConvocatoriaSiguiente = dia === 5 || dia === 6 || dia === 0 // viernes, sábado, domingo
+  if (abreConvocatoriaSiguiente) {
+    return new Date(
+      lunesDeEstaSemana.getFullYear(),
+      lunesDeEstaSemana.getMonth(),
+      lunesDeEstaSemana.getDate() + 7,
+    )
+  }
+  return lunesDeEstaSemana
 }
 
 export function idConvocatoriaActiva(ahora = new Date()) {

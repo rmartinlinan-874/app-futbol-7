@@ -131,6 +131,25 @@ export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas
         </section>
       )}
 
+      {noJuegan.length > 0 && (
+        <section className="tarjeta">
+          <h2 className="titulo-seccion">No juegan</h2>
+          <ul className="lista" style={{ marginTop: 8 }}>
+            {noJuegan.map((r) => {
+              const p = peñistaDe(r.id)
+              return (
+                <li key={r.id} className="lista-item">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Avatar nombre={p?.nombre ?? '?'} fotoURL={p?.fotoURL} tamaño={28} />
+                    {p?.nombre ?? '—'}
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
+
       {pendientes.length > 0 && (
         <section className="tarjeta">
           <h2 className="titulo-seccion">Por confirmar</h2>

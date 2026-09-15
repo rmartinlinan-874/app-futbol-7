@@ -76,13 +76,20 @@ nombre de la peña y el PIN; desde **Peñistas**, da de alta a la plantilla real
 
 ## Reglas de negocio implementadas
 
-- **Convocatoria activa**: siempre la del próximo lunes; si hoy es lunes y aún no
-  son las 21:00, es la de hoy. No hay cierre automático antes de esa hora.
+- **Convocatoria activa**: de lunes a jueves sigue siendo la del lunes de esa
+  semana (el partido ya jugado o a punto de jugarse), para dar tiempo al admin
+  a registrar el resultado y las cervezas. El viernes se abre la convocatoria
+  del lunes siguiente.
 - **Aforo**: mínimo 14, máximo 16. Los peñistas que dicen "juego" tienen prioridad
   por orden de apunte; si son más de 16, los últimos quedan en lista de espera.
   Los invitados **nunca** se añaden solos: el admin decide a quién confirma
   (pestaña Admin → Convocatoria → "Completar aforo con invitados"), respetando el
   orden de apunte como guía.
+- **Gestión de asistencia por el admin**: desde Admin → Convocatoria → "Gestionar
+  convocatoria", el admin puede marcar "Juega" / "No juega" o borrar la respuesta
+  de cualquier peñista, por si no ha podido hacerlo él mismo.
+- **Equipos**: se llaman "Blanco" y "Amarillo" (internamente se siguen guardando
+  como A/B, es solo una cuestión de etiqueta).
 - **Puntos**: victoria 3, empate 2, derrota 1, no jugar 0. Cerveza postpartido +0,5
   (acumulable). Los invitados no puntúan ni salen en la clasificación.
 - **Encargados**: el admin sortea 2 peñistas entre los confirmados para jugar ese

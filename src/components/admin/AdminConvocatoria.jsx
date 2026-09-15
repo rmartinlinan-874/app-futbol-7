@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react'
 import { AFORO_MAX, calcularAforo } from '../../lib/aforo'
-import { confirmarInvitado, sortearEncargados, registrarResultado } from '../../lib/actions'
+import {
+  confirmarInvitado,
+  sortearEncargados,
+  registrarResultado,
+  marcarRespuesta,
+  borrarRespuesta,
+} from '../../lib/actions'
+
+// Los equipos se guardan internamente como 'A' / 'B' (no afecta a datos ya
+// guardados ni a los cálculos de puntos), pero se muestran con los nombres
+// reales de los dos petos de la peña.
+const NOMBRE_EQUIPO = { A: 'Blanco', B: 'Amarillo' }
 
 function estadoInicialResultado(resultadoGuardado) {
   if (!resultadoGuardado?.registrado) {
@@ -23,6 +34,27 @@ export default function AdminConvocatoria({ idConvocatoria, convocatoria, respue
 
   const [sorteando, setSorteando] = useState(false)
   const [guardandoInvitado, setGuardandoInvitado] = useState(null)
+  const [guardandoAsistencia, setGuardandoAsistencia] = useState(null)
+
+  const activos = peñistas.filter((p) => p.activo)
+
+  async function fijarAsistencia(peñistaId, juega) {
+    setGuardandoAsistencia(peñistaId)
+    try {
+      await marcarRespuesta(idConvocatoria, peñistaId, juega)
+    } finally {
+      setGuardandoAsistencia(null)
+    }
+  }
+
+  async function quitarAsistencia(peñistaId) {
+    setGuardandoAsistencia(peñistaId)
+    try {
+      await borrarRespuesta(idConvocatoria, peñistaId)
+    } finally {
+      setGuardandoAsistencia(null)
+    }
+  }
 
   async function reSortear() {
     setSorteando(true)
@@ -106,6 +138,51 @@ export default function AdminConvocatoria({ idConvocatoria, convocatoria, respue
   return (
     <>
       <section className="tarjeta">
+        <h2 className="titulo-seccion">Gestionar convocatoria</h2>
+        <p className="subtitulo">Apunta o quita a cualquier peñista, por si no ha podido hacerlo él mismo.</p>
+        <ul className="lista" style={{ marginTop: 10 }}>
+          {activos.map((p) => {
+            const respuesta = respuestas.find((r) => r.id === p.id)
+            const ocupado = guardandoAsistencia === p.id
+            return (
+              <li key={p.id} className="lista-item">
+                <span>{p.nombre}</span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button
+                    className={`boton ${respuesta?.juega ? 'boton-primario' : 'boton-secundario'}`}
+                    style={{ padding: '5px 10px' }}
+                    disabled={ocupado}
+                    onClick={() => fijarAsistencia(p.id, true)}
+                  >
+                    Juega
+                  </button>
+                  <button
+                    className={`boton ${respuesta && !respuesta.juega ? 'boton-peligro' : 'boton-secundario'}`}
+                    style={{ padding: '5px 10px' }}
+                    disabled={ocupado}
+                    onClick={() => fijarAsistencia(p.id, false)}
+                  >
+                    No juega
+                  </button>
+                  {respuesta && (
+                    <button
+                      className="boton boton-secundario"
+                      style={{ padding: '5px 10px' }}
+                      disabled={ocupado}
+                      onClick={() => quitarAsistencia(p.id)}
+                      title="Volver a 'sin responder'"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+
+      <section className="tarjeta">
         <h2 className="titulo-seccion">Encargados de montar los equipos</h2>
         <p className="subtitulo">Se sortean entre los {aforo.peñistasJuegan.length} peñistas confirmados (nunca invitados).</p>
         {convocatoria?.encargados?.length === 2 && (
@@ -161,13 +238,13 @@ export default function AdminConvocatoria({ idConvocatoria, convocatoria, respue
             <p style={{ marginTop: 8 }}>
               {resultadoGuardado.ganador === 'empate'
                 ? 'Empate'
-                : `Ganó el equipo ${resultadoGuardado.ganador}`}
+                : `Ganó el equipo ${NOMBRE_EQUIPO[resultadoGuardado.ganador]}`}
             </p>
             <p className="subtitulo">
-              Equipo A: {resultadoGuardado.equipoA.map((m) => m.nombre).join(', ') || '—'}
+              Equipo {NOMBRE_EQUIPO.A}: {resultadoGuardado.equipoA.map((m) => m.nombre).join(', ') || '—'}
             </p>
             <p className="subtitulo">
-              Equipo B: {resultadoGuardado.equipoB.map((m) => m.nombre).join(', ') || '—'}
+              Equipo {NOMBRE_EQUIPO.B}: {resultadoGuardado.equipoB.map((m) => m.nombre).join(', ') || '—'}
             </p>
             <p className="subtitulo">
               Se quedaron a la cerveza: {resultadoGuardado.cerveza.map(nombreDe).join(', ') || 'nadie'}
@@ -195,13 +272,13 @@ export default function AdminConvocatoria({ idConvocatoria, convocatoria, respue
                     className={`sel-a ${form.asignaciones[p.id] === 'A' ? 'activo' : ''}`}
                     onClick={() => asignar(p.id, 'A')}
                   >
-                    A
+                    {NOMBRE_EQUIPO.A}
                   </button>
                   <button
                     className={`sel-b ${form.asignaciones[p.id] === 'B' ? 'activo' : ''}`}
                     onClick={() => asignar(p.id, 'B')}
                   >
-                    B
+                    {NOMBRE_EQUIPO.B}
                   </button>
                 </div>
               </div>
@@ -215,7 +292,7 @@ export default function AdminConvocatoria({ idConvocatoria, convocatoria, respue
                 className={`boton ${form.ganador === 'A' ? 'boton-primario' : 'boton-secundario'}`}
                 onClick={() => setForm((f) => ({ ...f, ganador: 'A' }))}
               >
-                Ganó A
+                Ganó {NOMBRE_EQUIPO.A}
               </button>
               <button
                 className={`boton ${form.ganador === 'empate' ? 'boton-primario' : 'boton-secundario'}`}
@@ -227,7 +304,7 @@ export default function AdminConvocatoria({ idConvocatoria, convocatoria, respue
                 className={`boton ${form.ganador === 'B' ? 'boton-primario' : 'boton-secundario'}`}
                 onClick={() => setForm((f) => ({ ...f, ganador: 'B' }))}
               >
-                Ganó B
+                Ganó {NOMBRE_EQUIPO.B}
               </button>
             </div>
 

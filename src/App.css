@@ -352,15 +352,18 @@ h2.titulo-seccion {
 }
 
 .selector-equipo button.sel-a.activo {
-  background: #2b6cb0;
-  color: white;
-  border-color: #2b6cb0;
+  background: #ffffff;
+  color: #1c1e21;
+  border-color: #1c1e21;
+  box-shadow: inset 0 0 0 1px #1c1e21;
+  font-weight: 700;
 }
 
 .selector-equipo button.sel-b.activo {
-  background: var(--rojo);
-  color: white;
-  border-color: var(--rojo);
+  background: #e8b400;
+  color: #3a2c00;
+  border-color: #e8b400;
+  font-weight: 700;
 }
 
 .checkbox-fila {

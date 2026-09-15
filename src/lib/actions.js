@@ -19,6 +19,10 @@ export async function marcarRespuesta(idConvocatoria, peñistaId, juega) {
   )
 }
 
+export async function borrarRespuesta(idConvocatoria, peñistaId) {
+  await deleteDoc(doc(db, 'convocatorias', idConvocatoria, 'respuestas', peñistaId))
+}
+
 export async function apuntarInvitado(idConvocatoria, { nombre, apuntadoPorId, apuntadoPorNombre }) {
   await addDoc(collection(db, 'convocatorias', idConvocatoria, 'invitados'), {
     nombre,

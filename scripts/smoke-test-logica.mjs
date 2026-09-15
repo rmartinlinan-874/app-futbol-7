@@ -87,7 +87,14 @@ for (const fecha of [
   const lunes = lunesConvocatoriaActiva(fecha)
   assert.equal(lunes.getDay(), 1, `debe caer en lunes para ${fecha}`)
 }
-assert.equal(idConvocatoriaActiva(new Date(2026, 8, 14, 22)).endsWith('09-21'), true, 'tras el partido del lunes, salta al lunes siguiente')
+
+// De martes a jueves sigue activo el lunes de esa semana (2026-09-14), para
+// dar tiempo a anotar el resultado; el viernes salta ya al siguiente.
+assert.equal(idConvocatoriaActiva(new Date(2026, 8, 14, 22)), '2026-09-14', 'lunes por la noche: sigue siendo esa convocatoria')
+assert.equal(idConvocatoriaActiva(new Date(2026, 8, 15, 9)), '2026-09-14', 'martes: sigue siendo la del lunes')
+assert.equal(idConvocatoriaActiva(new Date(2026, 8, 17, 9)), '2026-09-14', 'jueves: sigue siendo la del lunes')
+assert.equal(idConvocatoriaActiva(new Date(2026, 8, 18, 9)), '2026-09-21', 'viernes: ya se abre la siguiente')
+assert.equal(idConvocatoriaActiva(new Date(2026, 8, 20, 9)), '2026-09-21', 'domingo: sigue abierta la siguiente')
 console.log('OK: cálculo de la convocatoria activa')
 
 console.log('\nTodas las comprobaciones de lógica pasaron correctamente.')
