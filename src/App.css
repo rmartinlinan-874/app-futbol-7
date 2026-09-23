@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  background: var(--verde);
+  background: var(--primario);
   color: white;
 }
 
@@ -54,7 +54,7 @@
   height: 18px;
   border-radius: 50%;
   background: white;
-  border: 1.5px solid var(--verde);
+  border: 1.5px solid var(--primario);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,8 +101,8 @@
 }
 
 .nav-inferior button.activo {
-  color: var(--verde);
-  background: var(--verde-claro);
+  color: var(--primario);
+  background: var(--primario-claro);
   font-weight: 600;
 }
 
@@ -155,8 +155,8 @@ h2.titulo-seccion {
   color: var(--texto-suave);
 }
 
-.contador.verde .numero {
-  color: var(--verde);
+.contador.principal .numero {
+  color: var(--primario);
 }
 
 .contador.rojo .numero {
@@ -178,9 +178,9 @@ h2.titulo-seccion {
   color: #7a5c00;
 }
 
-.aviso.verde {
-  background: var(--verde-claro);
-  color: var(--verde-oscuro);
+.aviso.principal {
+  background: var(--primario-claro);
+  color: var(--primario-oscuro);
 }
 
 .lista {
@@ -212,8 +212,8 @@ h2.titulo-seccion {
   font-size: 0.68rem;
   padding: 2px 8px;
   border-radius: 999px;
-  background: var(--verde-claro);
-  color: var(--verde-oscuro);
+  background: var(--primario-claro);
+  color: var(--primario-oscuro);
   font-weight: 600;
 }
 
@@ -263,7 +263,7 @@ h2.titulo-seccion {
 }
 
 .grid-nombres button:active {
-  background: var(--verde-claro);
+  background: var(--primario-claro);
 }
 
 .tabla-clasificacion {
@@ -323,9 +323,9 @@ h2.titulo-seccion {
 }
 
 .pestañas-admin button.activo {
-  background: var(--verde);
+  background: var(--primario);
   color: white;
-  border-color: var(--verde);
+  border-color: var(--primario);
 }
 
 .fila-equipo {

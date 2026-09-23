@@ -19,7 +19,7 @@ export default function Avatar({ nombre, fotoURL, tamaño = 40 }) {
     fontWeight: 700,
     fontSize: tamaño * 0.4,
     color: 'white',
-    background: 'var(--verde)',
+    background: 'var(--primario)',
     overflow: 'hidden',
   }
 

@@ -1,10 +1,11 @@
 :root {
   color-scheme: light;
-  --verde: #1e7d3c;
-  --verde-oscuro: #145c2b;
-  --verde-claro: #e6f4ea;
-  --rojo: #c0392b;
-  --rojo-claro: #fdecea;
+  /* Paleta "Dóminos Peña": azul y rojo de Domino's Pizza + balón de fútbol. */
+  --primario: #0064b4;
+  --primario-oscuro: #004a82;
+  --primario-claro: #e5f1fa;
+  --rojo: #e31837;
+  --rojo-claro: #fce8ea;
   --ambar: #b8860b;
   --ambar-claro: #fdf3d9;
   --texto: #1c1e21;
@@ -92,7 +93,7 @@ input {
 }
 
 .boton-primario {
-  background: var(--verde);
+  background: var(--primario);
   color: white;
 }
 
@@ -120,6 +121,6 @@ input {
 }
 
 .campo-texto:focus {
-  outline: 2px solid var(--verde);
+  outline: 2px solid var(--primario);
   outline-offset: -1px;
 }

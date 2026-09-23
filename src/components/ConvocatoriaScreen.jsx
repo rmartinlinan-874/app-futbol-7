@@ -85,7 +85,7 @@ export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas
       </section>
 
       <section className="contadores">
-        <div className="contador verde">
+        <div className="contador principal">
           <span className="numero">{juegan.length + aforo.invitadosJuegan.length}</span>
           <span className="etiqueta">Juegan</span>
         </div>
@@ -108,7 +108,7 @@ export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas
           Faltan {aforo.faltanParaMinimo} para llegar al mínimo de {AFORO_MIN} jugadores.
         </p>
       ) : (
-        <p className="aviso verde">
+        <p className="aviso principal">
           {aforo.totalJugando} confirmados para jugar (de un máximo de {AFORO_MAX}).
         </p>
       )}
