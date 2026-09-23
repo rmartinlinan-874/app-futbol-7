@@ -23,3 +23,12 @@ function ConfiguracionFaltante() {
 createRoot(document.getElementById('root')).render(
   <StrictMode>{FIREBASE_CONFIGURADO ? <App /> : <ConfiguracionFaltante />}</StrictMode>,
 )
+
+// Necesario para que "Añadir a pantalla de inicio" abra la app a pantalla
+// completa (sin barra de direcciones) en vez de como una pestaña más, y es
+// la base para poder añadir notificaciones push más adelante.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {})
+  })
+}
