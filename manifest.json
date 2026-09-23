@@ -1,0 +1,16 @@
+{
+  "name": "Peña El Ancla",
+  "short_name": "Peña El Ancla",
+  "description": "Convocatoria semanal, resultados y clasificación de la peña.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef3ef",
+  "theme_color": "#1e7d3c",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
