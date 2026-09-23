@@ -3,6 +3,7 @@ import { formatearFechaLarga, horaPartidoTexto } from '../lib/dates'
 import { calcularAforo, AFORO_MIN, AFORO_MAX } from '../lib/aforo'
 import { marcarRespuesta, apuntarInvitado, quitarInvitado } from '../lib/actions'
 import Avatar from './Avatar'
+import AvisoNotificaciones from './AvisoNotificaciones'
 
 export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas, convocatoria, respuestas, invitados }) {
   const [nombreInvitado, setNombreInvitado] = useState('')
@@ -51,6 +52,8 @@ export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas
 
   return (
     <>
+      <AvisoNotificaciones peñista={peñista} />
+
       <section className="tarjeta">
         <h2 className="titulo-seccion">Próximo partido</h2>
         <p className="subtitulo">

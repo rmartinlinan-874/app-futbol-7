@@ -40,13 +40,13 @@ service cloud.firestore {
     match /penistas/{penistaId} {
       allow read: if estaAutenticado();
       allow create: if pinValido();
-      // Cambiar nombre/activo requiere PIN, pero subir tu foto (o la de
-      // cualquiera, no hay cuentas reales) es una acción abierta a
-      // cualquier peñista identificado: solo permitimos que ese único
-      // campo cambie sin PIN.
+      // Cambiar nombre/activo requiere PIN, pero subir tu foto o activar tus
+      // propios avisos (o los de cualquiera, no hay cuentas reales) son
+      // acciones abiertas a cualquier peñista identificado: solo esos dos
+      // campos pueden cambiar sin PIN.
       allow update: if pinValido() ||
         (estaAutenticado() &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fotoURL']));
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fotoURL', 'fcmToken']));
     }
 
     match /convocatorias/{convocatoriaId} {
