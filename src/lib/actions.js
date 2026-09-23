@@ -6,6 +6,7 @@ import {
   updateDoc,
   deleteDoc,
   serverTimestamp,
+  arrayUnion,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 
@@ -76,6 +77,13 @@ export async function altaPeñista(nombre, pin) {
 
 export async function editarPeñista(id, cambios, pin) {
   await updateDoc(doc(db, 'penistas', id), { ...cambios, adminPin: pin })
+}
+
+export async function ajustarPuntos(peñistaId, puntos, motivo, pin) {
+  await updateDoc(doc(db, 'penistas', peñistaId), {
+    historialAjustes: arrayUnion({ puntos, motivo, fecha: new Date().toISOString() }),
+    adminPin: pin,
+  })
 }
 
 export async function verificarPin(pinIntroducido, config) {

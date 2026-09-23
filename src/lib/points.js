@@ -2,8 +2,17 @@ export const PUNTOS = { victoria: 3, empate: 2, derrota: 1 }
 export const PUNTO_CERVEZA = 0.5
 
 /**
+ * Suma de los ajustes manuales de puntos del admin (positivos o negativos),
+ * al margen de los puntos por partido.
+ */
+export function sumaAjustesManuales(peñista) {
+  return (peñista.historialAjustes ?? []).reduce((total, a) => total + (a.puntos ?? 0), 0)
+}
+
+/**
  * Recorre los resultados registrados de todas las convocatorias y devuelve
- * la clasificación acumulada por peñista. Los invitados nunca puntúan.
+ * la clasificación acumulada por peñista: puntos por partido + ajustes
+ * manuales del admin. Los invitados nunca puntúan.
  */
 export function calcularClasificacion(convocatorias, peñistas) {
   const puntos = new Map(peñistas.map((p) => [p.id, 0]))
@@ -38,7 +47,7 @@ export function calcularClasificacion(convocatorias, peñistas) {
     .map((p) => ({
       id: p.id,
       nombre: p.nombre,
-      puntos: puntos.get(p.id) ?? 0,
+      puntos: (puntos.get(p.id) ?? 0) + sumaAjustesManuales(p),
       partidosJugados: partidosJugados.get(p.id) ?? 0,
     }))
     .sort((a, b) => b.puntos - a.puntos || a.nombre.localeCompare(b.nombre, 'es'))

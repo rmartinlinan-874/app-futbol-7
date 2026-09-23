@@ -47,7 +47,14 @@ console.log('OK: aviso de mínimo no alcanzado cuando no se confirman invitados'
 const peñistas = [
   { id: 'a', nombre: 'Ana' },
   { id: 'b', nombre: 'Bea' },
-  { id: 'c', nombre: 'Carlos' },
+  {
+    id: 'c',
+    nombre: 'Carlos',
+    historialAjustes: [
+      { puntos: 2, motivo: 'Trajo la equipación' },
+      { puntos: -1, motivo: 'Llegó tarde' },
+    ],
+  },
 ]
 const convocatorias = [
   {
@@ -74,7 +81,7 @@ const clasificacion = calcularClasificacion(convocatorias, peñistas)
 const porId = Object.fromEntries(clasificacion.map((c) => [c.id, c]))
 assert.equal(porId.a.puntos, 3 + 0.5 + 2, 'Ana: victoria(3) + cerveza(0.5) + empate(2)')
 assert.equal(porId.b.puntos, 1 + 2, 'Bea: derrota(1) + empate(2)')
-assert.equal(porId.c.puntos, 0, 'Carlos no jugó, 0 puntos')
+assert.equal(porId.c.puntos, 1, 'Carlos no jugó pero tiene un ajuste manual neto de +1')
 assert.equal(porId.a.partidosJugados, 2)
 console.log('OK: clasificación y puntos')
 
