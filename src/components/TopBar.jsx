@@ -38,7 +38,9 @@ export default function TopBar({ nombrePeña, peñista, onCambiarPeñista }) {
           onChange={elegirArchivo}
         />
         <div>
-          <h1>{nombrePeña}</h1>
+          <h1>
+            {nombrePeña} <span aria-hidden="true">🍕</span>
+          </h1>
           <span className="quien">{subiendo ? 'Subiendo foto…' : peñista?.nombre}</span>
         </div>
       </div>

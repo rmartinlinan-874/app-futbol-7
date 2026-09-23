@@ -40,27 +40,37 @@ export default function AvisoNotificaciones({ peñista }) {
   }
 
   return (
-    <section className="tarjeta">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ fontSize: 22 }}>🔔</span>
+    <section className="tarjeta" style={{ padding: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 16 }}>🔔</span>
         <div style={{ flex: 1 }}>
-          <p style={{ margin: 0, fontWeight: 600 }}>Activa los avisos</p>
-          <p className="subtitulo" style={{ margin: 0 }}>
+          <p style={{ margin: 0, fontWeight: 600, fontSize: '0.85rem' }}>Activa los avisos</p>
+          <p className="subtitulo" style={{ margin: 0, fontSize: '0.75rem' }}>
             Te avisamos el sábado cuando se abra la convocatoria, y cuando se registre el
             resultado del partido.
           </p>
         </div>
       </div>
       {error && (
-        <p className="aviso ambar" style={{ marginTop: 10 }}>
+        <p className="aviso ambar" style={{ marginTop: 8, fontSize: '0.78rem' }}>
           No se ha podido activar. Puede que hayas denegado el permiso de notificaciones.
         </p>
       )}
-      <div className="fila-toggle" style={{ marginTop: 10 }}>
-        <button className="boton boton-primario" disabled={activando} onClick={activar}>
+      <div className="fila-toggle" style={{ marginTop: 8 }}>
+        <button
+          className="boton boton-primario"
+          style={{ padding: '8px 12px', fontSize: '0.82rem' }}
+          disabled={activando}
+          onClick={activar}
+        >
           {activando ? 'Activando…' : 'Activar'}
         </button>
-        <button className="boton boton-secundario" disabled={activando} onClick={descartar}>
+        <button
+          className="boton boton-secundario"
+          style={{ padding: '8px 12px', fontSize: '0.82rem' }}
+          disabled={activando}
+          onClick={descartar}
+        >
           Ahora no
         </button>
       </div>
