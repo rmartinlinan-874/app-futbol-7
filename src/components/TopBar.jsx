@@ -39,13 +39,13 @@ export default function TopBar({ nombrePeña, peñista, onCambiarPeñista }) {
         />
         <div>
           <h1>
-            {nombrePeña}{' '}
             <img
               src={`${import.meta.env.BASE_URL}icon-192.png`}
               alt=""
               aria-hidden="true"
               className="logo-inline"
             />
+            {nombrePeña}
           </h1>
           <span className="quien">{subiendo ? 'Subiendo foto…' : peñista?.nombre}</span>
         </div>
