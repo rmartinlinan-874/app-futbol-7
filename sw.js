@@ -38,7 +38,7 @@ try {
   // hace falta que messaging esté inicializado para que esto funcione con la
   // app cerrada o en segundo plano.
   firebase.messaging()
-} catch (err) {
+} catch {
   // Sin Firebase Messaging disponible esta vez; la app sigue siendo
   // instalable y funcional, solo faltarán los avisos push en segundo plano.
 }
