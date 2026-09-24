@@ -48,7 +48,13 @@ async function enviar(tokens, { titulo, cuerpo }) {
   const resultado = await messaging.sendEachForMulticast({
     tokens,
     notification: { title: titulo, body: cuerpo },
-    webpush: { fcmOptions: { link: URL_APP } },
+    webpush: {
+      fcmOptions: { link: URL_APP },
+      notification: {
+        icon: `${URL_APP}icon-192.png`,
+        badge: `${URL_APP}icon-192.png`,
+      },
+    },
   })
   console.log(`Enviado a ${resultado.successCount}/${tokens.length} (${resultado.failureCount} fallos).`)
 }

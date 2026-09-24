@@ -1,4 +1,4 @@
-import { getMessaging, getToken, isSupported } from 'firebase/messaging'
+import { getMessaging, getToken, isSupported, onMessage } from 'firebase/messaging'
 import { doc, updateDoc } from 'firebase/firestore'
 import { app, db } from '../firebase'
 
@@ -39,4 +39,21 @@ export async function activarAvisos(peñistaId) {
 
   await updateDoc(doc(db, 'penistas', peñistaId), { fcmToken: token })
   return true
+}
+
+// Con la pestaña abierta y en primer plano, el navegador NO muestra la
+// notificación del sistema automáticamente (eso solo pasa en segundo plano
+// o con la app cerrada): hay que mostrarla nosotros a mano con el mismo
+// aspecto que tendría en segundo plano.
+export async function escucharAvisosEnPrimerPlano() {
+  const disponible = await avisosDisponibles()
+  if (!disponible) return
+
+  const messaging = getMessaging(app)
+  onMessage(messaging, async (payload) => {
+    const { title, body, icon, badge } = payload.notification ?? {}
+    if (!title) return
+    const registro = await navigator.serviceWorker.ready
+    registro.showNotification(title, { body, icon, badge })
+  })
 }

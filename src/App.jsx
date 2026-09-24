@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { doc, setDoc } from 'firebase/firestore'
 import { db, ensureAuth } from './firebase'
 import { idConvocatoriaActiva } from './lib/dates'
+import { escucharAvisosEnPrimerPlano } from './lib/notificaciones'
 import { useLocalPeñista } from './hooks/useLocalPeñista'
 import { useAdminSession } from './hooks/useAdminSession'
 import { useConfig, usePeñistas, useConvocatoria, useTodasConvocatorias } from './hooks/useFirestore'
@@ -21,6 +22,10 @@ export default function App() {
   const [authListo, setAuthListo] = useState(false)
   useEffect(() => {
     ensureAuth().then(() => setAuthListo(true))
+  }, [])
+
+  useEffect(() => {
+    escucharAvisosEnPrimerPlano()
   }, [])
 
   const [idConvocatoria, setIdConvocatoria] = useState(idConvocatoriaActiva)
