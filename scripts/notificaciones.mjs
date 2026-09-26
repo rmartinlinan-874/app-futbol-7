@@ -60,15 +60,19 @@ async function enviar(tokens, { titulo, cuerpo }) {
 }
 
 async function avisoSabado() {
+  // GitHub Actions no garantiza que el cron se ejecute justo a la hora en
+  // punto (puede retrasarse varias horas), así que en vez de exigir que sean
+  // exactamente las 12:00, avisamos en la primera ejecución del sábado a
+  // partir de esa hora. La comprobación de "ya avisado hoy" evita duplicados.
   const { dia, hora } = horaMadrid()
-  if (dia !== 'Sat' || hora !== 12) return
+  if (dia !== 'Sat' || hora < 12) return
 
   const metaRef = db.doc('meta/notificaciones')
   const meta = (await metaRef.get()).data() ?? {}
   const hoy = fechaMadrid()
   if (meta.ultimoAvisoSabado === hoy) return
 
-  console.log('Es sábado a las 12:00 (Madrid): enviando aviso de convocatoria...')
+  console.log('Es sábado y ya son las 12:00 o más (Madrid): enviando aviso de convocatoria...')
   const tokens = await tokensActivos()
   await enviar(tokens, {
     titulo: '⚽ Se abre la convocatoria',
