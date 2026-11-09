@@ -10,7 +10,7 @@
 // guarda constancia en el documento meta/notificaciones).
 
 import { initializeApp, cert } from 'firebase-admin/app'
-import { getFirestore } from 'firebase-admin/firestore'
+import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { getMessaging } from 'firebase-admin/messaging'
 
 const URL_APP = 'https://rmartinlinan-874.github.io/app-futbol-7/'
@@ -35,18 +35,30 @@ function fechaMadrid() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(new Date())
 }
 
-async function tokensActivos() {
+async function destinatariosActivos() {
   const snap = await db.collection('penistas').where('activo', '==', true).get()
-  return snap.docs.map((d) => d.data().fcmToken).filter(Boolean)
+  return snap.docs
+    .map((d) => ({ id: d.id, nombre: d.data().nombre, token: d.data().fcmToken }))
+    .filter((p) => p.token)
 }
 
-async function enviar(tokens, { titulo, cuerpo }) {
-  if (tokens.length === 0) {
+// Si FCM dice que un token ya no es válido (el navegador lo revocó, se borró
+// el sitio, etc.), lo quitamos del peñista: así la app vuelve a mostrarle el
+// aviso de "Activa los avisos" en vez de reintentar para siempre un token
+// muerto.
+const ERRORES_TOKEN_MUERTO = new Set([
+  'messaging/registration-token-not-registered',
+  'messaging/invalid-registration-token',
+  'messaging/invalid-argument',
+])
+
+async function enviar(destinatarios, { titulo, cuerpo }) {
+  if (destinatarios.length === 0) {
     console.log('Sin destinatarios (nadie tiene avisos activados todavía).')
     return
   }
   const resultado = await messaging.sendEachForMulticast({
-    tokens,
+    tokens: destinatarios.map((d) => d.token),
     notification: { title: titulo, body: cuerpo },
     webpush: {
       fcmOptions: { link: URL_APP },
@@ -56,7 +68,22 @@ async function enviar(tokens, { titulo, cuerpo }) {
       },
     },
   })
-  console.log(`Enviado a ${resultado.successCount}/${tokens.length} (${resultado.failureCount} fallos).`)
+  console.log(
+    `Enviado a ${resultado.successCount}/${destinatarios.length} (${resultado.failureCount} fallos).`,
+  )
+
+  await Promise.all(
+    resultado.responses.map(async (respuesta, i) => {
+      if (respuesta.success) return
+      const destinatario = destinatarios[i]
+      const codigo = respuesta.error?.code ?? 'desconocido'
+      console.log(`  Fallo para ${destinatario.nombre} (${destinatario.id}): ${codigo}`)
+      if (ERRORES_TOKEN_MUERTO.has(codigo)) {
+        await db.doc(`penistas/${destinatario.id}`).update({ fcmToken: FieldValue.delete() })
+        console.log(`  Token muerto: borrado de ${destinatario.nombre}, se le volverá a pedir activar.`)
+      }
+    }),
+  )
 }
 
 async function avisoSabado() {
@@ -73,8 +100,8 @@ async function avisoSabado() {
   if (meta.ultimoAvisoSabado === hoy) return
 
   console.log('Es sábado y ya son las 12:00 o más (Madrid): enviando aviso de convocatoria...')
-  const tokens = await tokensActivos()
-  await enviar(tokens, {
+  const destinatarios = await destinatariosActivos()
+  await enviar(destinatarios, {
     titulo: '⚽ Se abre la convocatoria',
     cuerpo: 'Ya puedes decir si juegas el próximo lunes.',
   })
@@ -91,8 +118,8 @@ async function avisoResultado() {
   if (nuevas.length === 0) return
 
   console.log(`Resultado nuevo en ${nuevas.map((d) => d.id).join(', ')}: enviando aviso...`)
-  const tokens = await tokensActivos()
-  await enviar(tokens, {
+  const destinatarios = await destinatariosActivos()
+  await enviar(destinatarios, {
     titulo: '🏆 Clasificación actualizada',
     cuerpo: 'Ya está el resultado del partido. Mira cómo queda la clasificación.',
   })
@@ -100,6 +127,33 @@ async function avisoResultado() {
   await metaRef.set({ convocatoriasNotificadas: [...notificadas] }, { merge: true })
 }
 
-await avisoSabado()
-await avisoResultado()
+// Envío manual de prueba a un solo peñista (workflow_dispatch con el input
+// "penista_prueba"), para comprobar si a alguien en concreto le llegan los
+// avisos sin tener que esperar al sábado o a un resultado nuevo.
+async function avisoPrueba(nombre) {
+  const snap = await db.collection('penistas').where('nombre', '==', nombre).get()
+  if (snap.empty) {
+    console.log(`No hay ningún peñista llamado "${nombre}".`)
+    return
+  }
+  const d = snap.docs[0]
+  const token = d.data().fcmToken
+  if (!token) {
+    console.log(`${nombre} no tiene avisos activados (sin fcmToken guardado).`)
+    return
+  }
+  console.log(`Enviando aviso de prueba a ${nombre}...`)
+  await enviar([{ id: d.id, nombre, token }], {
+    titulo: '🔔 Prueba de avisos',
+    cuerpo: 'Si ves esto, los avisos push te funcionan bien.',
+  })
+}
+
+const penistaPrueba = process.env.PENISTA_PRUEBA?.trim()
+if (penistaPrueba) {
+  await avisoPrueba(penistaPrueba)
+} else {
+  await avisoSabado()
+  await avisoResultado()
+}
 console.log('Comprobación de avisos terminada.')

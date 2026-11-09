@@ -4,7 +4,12 @@ on:
   schedule:
     # Cada 30 minutos. El propio script decide si "toca" avisar o no.
     - cron: "0,30 * * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      penista_prueba:
+        description: "Nombre exacto de un peñista para enviarle solo a él un aviso de prueba (deja en blanco para la comprobación normal)"
+        required: false
+        default: ""
 
 jobs:
   avisar:
@@ -21,3 +26,4 @@ jobs:
       - run: node scripts/notificaciones.mjs
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          PENISTA_PRUEBA: ${{ github.event.inputs.penista_prueba }}
