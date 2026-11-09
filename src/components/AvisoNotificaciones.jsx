@@ -5,13 +5,19 @@ const CLAVE_DESCARTADO = 'apppena_avisos_descartado'
 
 export default function AvisoNotificaciones({ peñista }) {
   const [disponible, setDisponible] = useState(false)
+  // Clave por peñista: en el mismo dispositivo se puede cambiar de peñista
+  // (ver TopBar > Cambiar), y descartar el aviso siendo uno no debe ocultarlo
+  // para los demás.
   const [descartado, setDescartado] = useState(
-    () => localStorage.getItem(CLAVE_DESCARTADO) === '1',
+    () => localStorage.getItem(`${CLAVE_DESCARTADO}_${peñista.id}`) === '1',
   )
   const [activando, setActivando] = useState(false)
-  const [activado, setActivado] = useState(
-    typeof Notification !== 'undefined' && Notification.permission === 'granted',
-  )
+  // El permiso de notificaciones del navegador es por dispositivo, no por
+  // peñista: si ya está concedido pero el token guardado es el de otro
+  // peñista (o nunca se guardó para este), hay que volver a mostrar el
+  // aviso y a activar, aunque el navegador ya diga "granted".
+  const [activadoLocal, setActivadoLocal] = useState(false)
+  const activado = activadoLocal || Boolean(peñista.fcmToken)
   const [error, setError] = useState(false)
 
   useEffect(() => {
@@ -25,7 +31,7 @@ export default function AvisoNotificaciones({ peñista }) {
     setError(false)
     try {
       const ok = await activarAvisos(peñista.id)
-      if (ok) setActivado(true)
+      if (ok) setActivadoLocal(true)
       else setError(true)
     } catch {
       setError(true)
@@ -36,7 +42,7 @@ export default function AvisoNotificaciones({ peñista }) {
 
   function descartar() {
     setDescartado(true)
-    localStorage.setItem(CLAVE_DESCARTADO, '1')
+    localStorage.setItem(`${CLAVE_DESCARTADO}_${peñista.id}`, '1')
   }
 
   return (
