@@ -94,8 +94,19 @@ nombre de la peña y el PIN; desde **Peñistas**, da de alta a la plantilla real
   (acumulable). Los invitados no puntúan ni salen en la clasificación.
 - **Encargados**: son los dos primeros de la clasificación entre los peñistas
   confirmados para jugar ese día (nunca invitados). Empate a puntos: gana quien
-  menos veces haya sido encargado antes. Si el empate persiste, por sorteo entre
-  los empatados.
+  menos veces haya sido encargado antes. Si el empate persiste, por un sorteo
+  fijo calculado a partir de la fecha de la convocatoria (así todos los móviles
+  sacan los mismos capitanes sin que nadie tenga que sortear). La app los
+  calcula sola; el admin puede fijarlos a mano si quiere.
+- **Elección de equipos**: en la pestaña Convocatoria, los dos capitanes eligen
+  jugadores por turnos desde su móvil. El 1º clasificado lleva el Blanco y el
+  2º el Amarillo. Orden: 2º, 1º, 1º y a partir de ahí alternos (2º, 1º, 2º…).
+  Los capitanes quedan fijados con la primera elección; hasta entonces son
+  provisionales. Cada capitán puede deshacer su última elección mientras el
+  otro no haya elegido, y el admin puede reiniciar la elección entera. Los
+  equipos que salen se cargan solos en el formulario de resultado. Se guarda
+  en `convocatorias/{id}/eleccion/estado` y cada movimiento va en una
+  transacción, para que dos móviles no puedan elegir a la vez.
 - **Fotos de perfil**: cualquier peñista puede subir o cambiar la foto de
   cualquiera (no hay contraseñas, ver "Seguridad" más abajo) tocando su
   avatar en la barra superior. Se guardan como imagen pequeña incrustada en

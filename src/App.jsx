@@ -36,7 +36,7 @@ export default function App() {
 
   const { config, cargando: cargandoConfig } = useConfig()
   const { peñistas, cargando: cargandoPeñistas } = usePeñistas()
-  const { convocatoria, respuestas, invitados, cargando: cargandoConvocatoria } = useConvocatoria(idConvocatoria)
+  const { convocatoria, respuestas, invitados, eleccion, cargando: cargandoConvocatoria } = useConvocatoria(idConvocatoria)
   const { convocatorias, cargando: cargandoTodas } = useTodasConvocatorias()
 
   const [peñista, setPeñista] = useLocalPeñista()
@@ -76,6 +76,7 @@ export default function App() {
       convocatoria={convocatoria}
       respuestas={respuestas}
       invitados={invitados}
+      eleccion={eleccion}
       peñistas={peñistas}
       convocatorias={convocatorias}
       config={config}
@@ -129,6 +130,9 @@ export default function App() {
             convocatoria={convocatoria}
             respuestas={respuestas}
             invitados={invitados}
+            eleccion={eleccion}
+            convocatorias={convocatorias}
+            cargandoConvocatorias={cargandoTodas}
           />
         )}
 

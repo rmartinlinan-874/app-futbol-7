@@ -391,3 +391,95 @@ label.campo-label {
   display: block;
   margin-bottom: 4px;
 }
+
+/* --- Elección de equipos --- */
+.aviso.error {
+  background: var(--rojo-claro);
+  color: var(--rojo);
+}
+
+.aviso-turno {
+  font-weight: 700;
+}
+
+.equipos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.columna-equipo {
+  border-radius: 10px;
+  border: 1px solid var(--borde);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.cabecera-equipo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.equipo-A .cabecera-equipo {
+  background: #ffffff;
+  color: #1c1e21;
+  border-bottom: 2px solid #1c1e21;
+}
+
+.equipo-B .cabecera-equipo {
+  background: #e8b400;
+  color: #3a2c00;
+}
+
+.contador-equipo {
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.lista-equipo {
+  list-style: none;
+  margin: 0;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
+.lista-equipo li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.lista-equipo li.desapuntado .nombre-equipo {
+  text-decoration: line-through;
+  color: var(--texto-suave);
+}
+
+.nombre-equipo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+button.jugador-elegible {
+  width: 100%;
+  border: 1.5px solid var(--primario);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+button.jugador-elegible:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

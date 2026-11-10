@@ -64,6 +64,22 @@ service cloud.firestore {
         allow write: if estaAutenticado();
       }
 
+      // Elección de equipos por turnos (un único documento "estado"). Está
+      // abierta a cualquier peñista identificado, igual que las respuestas:
+      // no hay cuentas reales, así que el turno lo controla la app con
+      // transacciones. Aquí solo se valida la forma para evitar basura.
+      match /eleccion/{docId} {
+        allow read: if estaAutenticado();
+        allow delete: if estaAutenticado();
+        allow create, update: if estaAutenticado() &&
+          docId == 'estado' &&
+          request.resource.data.keys().hasOnly(['capitanes', 'elecciones', 'completa', 'actualizado']) &&
+          request.resource.data.capitanes is list &&
+          request.resource.data.capitanes.size() == 2 &&
+          request.resource.data.elecciones is list &&
+          request.resource.data.elecciones.size() <= 40;
+      }
+
       match /invitados/{invitadoId} {
         allow read: if estaAutenticado();
         allow create, delete: if estaAutenticado();

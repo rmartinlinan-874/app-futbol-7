@@ -38,6 +38,7 @@ export function useConvocatoria(idConvocatoria) {
   const [convocatoria, setConvocatoria] = useState(null)
   const [respuestas, setRespuestas] = useState([])
   const [invitados, setInvitados] = useState([])
+  const [eleccion, setEleccion] = useState(null)
   const [cargando, setCargando] = useState(true)
 
   useEffect(() => {
@@ -55,14 +56,18 @@ export function useConvocatoria(idConvocatoria) {
       query(collection(db, 'convocatorias', idConvocatoria, 'invitados'), orderBy('timestamp')),
       (snap) => setInvitados(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
     )
+    const unsubEleccion = onSnapshot(doc(db, 'convocatorias', idConvocatoria, 'eleccion', 'estado'), (snap) =>
+      setEleccion(snap.exists() ? snap.data() : null),
+    )
     return () => {
       unsubConv()
       unsubResp()
       unsubInv()
+      unsubEleccion()
     }
   }, [idConvocatoria])
 
-  return { convocatoria, respuestas, invitados, cargando }
+  return { convocatoria, respuestas, invitados, eleccion, cargando }
 }
 
 export function useTodasConvocatorias() {

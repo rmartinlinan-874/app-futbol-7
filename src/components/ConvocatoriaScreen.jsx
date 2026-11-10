@@ -4,8 +4,19 @@ import { calcularAforo, AFORO_MIN, AFORO_MAX } from '../lib/aforo'
 import { marcarRespuesta, apuntarInvitado, quitarInvitado } from '../lib/actions'
 import Avatar from './Avatar'
 import AvisoNotificaciones from './AvisoNotificaciones'
+import EleccionEquipos from './EleccionEquipos'
 
-export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas, convocatoria, respuestas, invitados }) {
+export default function ConvocatoriaScreen({
+  idConvocatoria,
+  peñista,
+  peñistas,
+  convocatoria,
+  respuestas,
+  invitados,
+  eleccion,
+  convocatorias,
+  cargandoConvocatorias,
+}) {
   const [nombreInvitado, setNombreInvitado] = useState('')
   const [enviando, setEnviando] = useState(false)
 
@@ -17,7 +28,6 @@ export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas
 
   const aforo = calcularAforo({ respuestasJuego: juegan, invitados })
   const peñistaDe = (id) => peñistas.find((p) => p.id === id)
-  const nombreDe = (id) => peñistaDe(id)?.nombre ?? '—'
 
   const activos = peñistas.filter((p) => p.activo)
   const pendientes = activos.filter((p) => !respuestas.some((r) => r.id === p.id))
@@ -83,6 +93,17 @@ export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas
           </p>
         )}
       </section>
+
+      <EleccionEquipos
+        idConvocatoria={idConvocatoria}
+        peñista={peñista}
+        peñistas={peñistas}
+        convocatoria={convocatoria}
+        aforo={aforo}
+        eleccion={eleccion}
+        convocatorias={convocatorias}
+        cargandoConvocatorias={cargandoConvocatorias}
+      />
 
       <section className="contadores">
         <div className="contador principal">
@@ -176,15 +197,6 @@ export default function ConvocatoriaScreen({ idConvocatoria, peñista, peñistas
               </li>
             ))}
           </ul>
-        </section>
-      )}
-
-      {convocatoria?.encargados?.length === 2 && (
-        <section className="tarjeta">
-          <h2 className="titulo-seccion">Encargados de montar los equipos</h2>
-          <p className="subtitulo">
-            {nombreDe(convocatoria.encargados[0])} y {nombreDe(convocatoria.encargados[1])}
-          </p>
         </section>
       )}
 

@@ -2,18 +2,15 @@ import { useEffect, useState } from 'react'
 import { AFORO_MAX, calcularAforo } from '../../lib/aforo'
 import { calcularClasificacion, calcularVecesEncargado } from '../../lib/points'
 import { elegirCapitanes } from '../../lib/encargados'
+import { asignacionesDesdeEleccion, participantesDelPartido, NOMBRE_EQUIPO } from '../../lib/eleccion'
 import {
   confirmarInvitado,
   guardarEncargados,
   registrarResultado,
   marcarRespuesta,
   borrarRespuesta,
+  reiniciarEleccion,
 } from '../../lib/actions'
-
-// Los equipos se guardan internamente como 'A' / 'B' (no afecta a datos ya
-// guardados ni a los cálculos de puntos), pero se muestran con los nombres
-// reales de los dos petos de la peña.
-const NOMBRE_EQUIPO = { A: 'Blanco', B: 'Amarillo' }
 
 function estadoInicialResultado(resultadoGuardado) {
   if (!resultadoGuardado?.registrado) {
@@ -34,6 +31,7 @@ export default function AdminConvocatoria({
   convocatoria,
   respuestas,
   invitados,
+  eleccion,
   peñistas,
   convocatorias,
   pin,
@@ -82,6 +80,7 @@ export default function AdminConvocatoria({
         aforo.peñistasJuegan.map((r) => r.id),
         puntosPorId,
         vecesEncargadoPorId,
+        idConvocatoria,
       )
       await guardarEncargados(idConvocatoria, elegidos, pin)
     } finally {
@@ -102,20 +101,46 @@ export default function AdminConvocatoria({
   const [editandoResultado, setEditandoResultado] = useState(false)
   const [form, setForm] = useState(() => estadoInicialResultado(convocatoria?.resultado))
   const [guardandoResultado, setGuardandoResultado] = useState(false)
+  // Mientras el admin no toque a mano los equipos del formulario, se
+  // rellenan solos con lo que vayan eligiendo los capitanes.
+  const [equiposTocados, setEquiposTocados] = useState(false)
+  const [reiniciando, setReiniciando] = useState(false)
 
   // Solo se reinicia el formulario al cambiar de convocatoria, para no
   // pisar una edición en curso del admin si llega una actualización en vivo.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setForm(estadoInicialResultado(convocatoria?.resultado))
+    setEquiposTocados(false)
   }, [idConvocatoria])
 
-  const participantes = [
-    ...aforo.peñistasJuegan.map((r) => ({ id: r.id, tipo: 'peñista', nombre: nombreDe(r.id) })),
-    ...aforo.invitadosJuegan.map((i) => ({ id: i.id, tipo: 'invitado', nombre: i.nombre })),
-  ]
+  const participantes = participantesDelPartido(aforo, peñistas)
+
+  const asignacionesEleccion =
+    eleccion?.capitanes?.length === 2
+      ? asignacionesDesdeEleccion({ capitanes: eleccion.capitanes, elecciones: eleccion.elecciones, participantes })
+      : null
+  const clavesEleccion = asignacionesEleccion ? JSON.stringify(asignacionesEleccion) : null
+  const usaEquiposDeEleccion = Boolean(asignacionesEleccion) && !convocatoria?.resultado?.registrado && !equiposTocados
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (usaEquiposDeEleccion) setForm((f) => ({ ...f, asignaciones: asignacionesEleccion }))
+  }, [clavesEleccion, usaEquiposDeEleccion])
+
+  async function borrarEleccion() {
+    if (!window.confirm('¿Reiniciar la elección de equipos? Se borran todas las elecciones de los capitanes.')) return
+    setReiniciando(true)
+    try {
+      await reiniciarEleccion(idConvocatoria)
+      setEquiposTocados(false)
+    } finally {
+      setReiniciando(false)
+    }
+  }
 
   function asignar(id, equipo) {
+    setEquiposTocados(true)
     setForm((f) => ({
       ...f,
       asignaciones: { ...f.asignaciones, [id]: f.asignaciones[id] === equipo ? undefined : equipo },
@@ -220,8 +245,30 @@ export default function AdminConvocatoria({
           disabled={sorteando || aforo.peñistasJuegan.length < 2}
           onClick={elegirEncargados}
         >
-          {convocatoria?.encargados?.length === 2 ? '🔁 Recalcular encargados' : '📋 Elegir encargados'}
+          {convocatoria?.encargados?.length === 2 ? '🔁 Recalcular encargados' : '📋 Fijar encargados'}
         </button>
+        <p className="subtitulo" style={{ marginTop: 8 }}>
+          No hace falta pulsarlo: la app calcula los capitanes sola y ellos pueden empezar a elegir equipos en
+          cuanto quieran. Úsalo solo si quieres fijarlos antes de que empiece la elección.
+        </p>
+
+        {eleccion?.capitanes?.length === 2 && (
+          <>
+            <p className="aviso principal" style={{ marginTop: 10 }}>
+              Elección en marcha: {nombreDe(eleccion.capitanes[0])} ({NOMBRE_EQUIPO.A}) y{' '}
+              {nombreDe(eleccion.capitanes[1])} ({NOMBRE_EQUIPO.B}), {eleccion.elecciones?.length ?? 0} jugadores
+              elegidos. Mientras esté en marcha, los capitanes no cambian.
+            </p>
+            <button
+              className="boton boton-peligro"
+              style={{ marginTop: 8 }}
+              disabled={reiniciando}
+              onClick={borrarEleccion}
+            >
+              🗑️ Reiniciar elección de equipos
+            </button>
+          </>
+        )}
       </section>
 
       <section className="tarjeta">
@@ -284,7 +331,9 @@ export default function AdminConvocatoria({
         ) : (
           <>
             <p className="subtitulo" style={{ marginTop: 8 }}>
-              Asigna a cada participante a un equipo (tal y como se formaron en el campo).
+              {usaEquiposDeEleccion
+                ? 'Equipos cargados de la elección de los capitanes. Cambia a quien haga falta si en el campo se hizo distinto.'
+                : 'Asigna a cada participante a un equipo (tal y como se formaron en el campo).'}
             </p>
             {participantes.map((p) => (
               <div key={p.id} className="fila-equipo">

@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { calcularAforo, AFORO_MAX, AFORO_MIN } from '../src/lib/aforo.js'
 import { calcularClasificacion, calcularVecesEncargado } from '../src/lib/points.js'
-import { elegirCapitanes } from '../src/lib/encargados.js'
+import { elegirCapitanes, capitanesDeLaEleccion } from '../src/lib/encargados.js'
+import { capitanDelTurno, estadoEleccion, asignacionesDesdeEleccion } from '../src/lib/eleccion.js'
 import { idConvocatoriaActiva, lunesConvocatoriaActiva } from '../src/lib/dates.js'
 
 const t = (ms) => ({ toMillis: () => ms })
@@ -114,12 +115,77 @@ assert.deepEqual(
   'con puntos iguales, ganan los que menos veces han sido encargados',
 )
 
-// Empate total (puntos y veces): sale un sorteo válido entre los empatados.
-const elegidosPorSorteo = elegirCapitanes(['x', 'y', 'z'], puntosEmpatados, new Map())
+// Empate total (puntos y veces): sale un sorteo válido entre los empatados,
+// y siempre el mismo para la misma convocatoria (todos los móviles coinciden).
+const elegidosPorSorteo = elegirCapitanes(['x', 'y', 'z'], puntosEmpatados, new Map(), '2026-11-16')
 assert.equal(elegidosPorSorteo.length, 2)
 assert.equal(elegidosPorSorteo.every((id) => ['x', 'y', 'z'].includes(id)), true)
 assert.notEqual(elegidosPorSorteo[0], elegidosPorSorteo[1])
+for (let i = 0; i < 20; i++) {
+  assert.deepEqual(
+    elegirCapitanes(['z', 'x', 'y'], puntosEmpatados, new Map(), '2026-11-16'),
+    elegidosPorSorteo,
+    'el sorteo de desempate es fijo para la misma convocatoria',
+  )
+}
 console.log('OK: elección de encargados')
+
+// --- elección de equipos por turnos ---
+assert.deepEqual(
+  Array.from({ length: 9 }, (_, n) => capitanDelTurno(n) + 1),
+  [2, 1, 1, 2, 1, 2, 1, 2, 1],
+  'orden: 2º, 1º, 1º y luego alternos',
+)
+
+const participantesPartido = ['c1', 'c2', 'j1', 'j2', 'j3', 'j4', 'j5'].map((id) => ({ id, tipo: 'peñista', nombre: id }))
+const capitanesPartido = ['c1', 'c2']
+let e = estadoEleccion({ capitanes: capitanesPartido, elecciones: [], participantes: participantesPartido })
+assert.equal(e.idCapitanTurno, 'c2', 'empieza el 2º')
+assert.equal(e.equipoTurno, 'B')
+assert.equal(e.libres.length, 5, 'los capitanes no se eligen')
+assert.equal(e.terminada, false)
+
+const eleccionesPartido = [
+  { id: 'j1', equipo: 'B', porId: 'c2' },
+  { id: 'j2', equipo: 'A', porId: 'c1' },
+  { id: 'j3', equipo: 'A', porId: 'c1' },
+  { id: 'j4', equipo: 'B', porId: 'c2' },
+  { id: 'j5', equipo: 'A', porId: 'c1' },
+]
+e = estadoEleccion({ capitanes: capitanesPartido, elecciones: eleccionesPartido.slice(0, 3), participantes: participantesPartido })
+assert.equal(e.idCapitanTurno, 'c2', 'tras 2º, 1º, 1º vuelve a tocar al 2º')
+e = estadoEleccion({ capitanes: capitanesPartido, elecciones: eleccionesPartido, participantes: participantesPartido })
+assert.equal(e.terminada, true)
+assert.deepEqual(e.equipoA.map((m) => m.id), ['c1', 'j2', 'j3', 'j5'])
+assert.deepEqual(e.equipoB.map((m) => m.id), ['c2', 'j1', 'j4'])
+assert.equal(e.hayDesapuntados, false)
+
+// Alguien elegido se borra después: se marca y no entra en el resultado.
+const sinJ4 = participantesPartido.filter((p) => p.id !== 'j4')
+e = estadoEleccion({ capitanes: capitanesPartido, elecciones: eleccionesPartido, participantes: sinJ4 })
+assert.equal(e.hayDesapuntados, true)
+assert.equal(e.equipoB.find((m) => m.id === 'j4').sigueApuntado, false)
+const asignaciones = asignacionesDesdeEleccion({ capitanes: capitanesPartido, elecciones: eleccionesPartido, participantes: sinJ4 })
+assert.deepEqual(asignaciones, { c1: 'A', c2: 'B', j1: 'B', j2: 'A', j3: 'A', j5: 'A' })
+
+// Capitanes: fijados si la elección ya empezó; si no, los del admin si siguen
+// apuntados; si no, los automáticos.
+const baseCapitanes = { idConvocatoria: '2026-11-16', convocatorias, peñistas }
+assert.deepEqual(
+  capitanesDeLaEleccion({ ...baseCapitanes, eleccion: { capitanes: ['b', 'c'] }, encargadosAdmin: ['a', 'b'], candidatosIds: ['a', 'b', 'c'] }),
+  { capitanes: ['b', 'c'], fijados: true },
+)
+assert.deepEqual(
+  capitanesDeLaEleccion({ ...baseCapitanes, eleccion: null, encargadosAdmin: ['c', 'b'], candidatosIds: ['a', 'b', 'c'] }).capitanes,
+  ['c', 'b'],
+)
+assert.deepEqual(
+  capitanesDeLaEleccion({ ...baseCapitanes, eleccion: null, encargadosAdmin: ['c', 'zz'], candidatosIds: ['a', 'b', 'c'] }).capitanes,
+  ['a', 'b'],
+  'si un encargado del admin ya no juega, se usan los automáticos',
+)
+assert.equal(capitanesDeLaEleccion({ ...baseCapitanes, eleccion: null, candidatosIds: ['a'] }), null)
+console.log('OK: elección de equipos por turnos')
 
 // --- fechas: convocatoria activa siempre es un lunes ---
 for (const fecha of [

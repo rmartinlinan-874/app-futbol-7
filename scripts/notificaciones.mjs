@@ -1,7 +1,8 @@
 // Envía avisos push a los peñistas:
 //  1) los sábados a las 12:00 (hora de Madrid), recordando que se abre la
 //     convocatoria del lunes;
-//  2) cuando se detecta un resultado de partido recién registrado, avisando
+//  2) cuando los capitanes terminan de elegir los equipos;
+//  3) cuando se detecta un resultado de partido recién registrado, avisando
 //     de que la clasificación se ha actualizado.
 //
 // Pensado para ejecutarse cada poco tiempo (ver .github/workflows/notificaciones.yml):
@@ -15,8 +16,13 @@ import { getMessaging } from 'firebase-admin/messaging'
 
 const URL_APP = 'https://rmartinlinan-874.github.io/app-futbol-7/'
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
-initializeApp({ credential: cert(serviceAccount) })
+// Con FIRESTORE_EMULATOR_HOST se puede probar contra los emuladores locales
+// (npm run emuladores) sin cuenta de servicio; los envíos push no salen.
+if (process.env.FIRESTORE_EMULATOR_HOST && !process.env.FIREBASE_SERVICE_ACCOUNT) {
+  initializeApp({ projectId: 'demo-app-pena' })
+} else {
+  initializeApp({ credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) })
+}
 const db = getFirestore()
 const messaging = getMessaging()
 
@@ -108,6 +114,43 @@ async function avisoSabado() {
   await metaRef.set({ ultimoAvisoSabado: hoy }, { merge: true })
 }
 
+async function avisoEquipos() {
+  const metaRef = db.doc('meta/notificaciones')
+  const meta = (await metaRef.get()).data() ?? {}
+  const notificadas = new Set(meta.equiposNotificados ?? [])
+
+  // listDocuments (y no get) porque el documento de la convocatoria muchas
+  // veces no existe como tal: solo tiene subcolecciones (respuestas,
+  // elección…) hasta que el admin fija encargados o resultado. Se miran solo
+  // las de las dos últimas semanas (el id es la fecha) que no se hayan
+  // avisado ya ni tengan resultado (jugado el partido, ya no tiene sentido).
+  const desde = new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString().slice(0, 10)
+  const refs = (await db.collection('convocatorias').listDocuments()).filter(
+    (r) => r.id >= desde && !notificadas.has(r.id),
+  )
+  if (refs.length === 0) return
+  const convocatorias = await db.getAll(...refs)
+  const candidatas = convocatorias.filter((d) => !d.data()?.resultado?.registrado)
+  if (candidatas.length === 0) return
+
+  const elecciones = await db.getAll(...candidatas.map((d) => d.ref.collection('eleccion').doc('estado')))
+  const completas = elecciones.filter((e) => e.exists && e.data().completa === true)
+  if (completas.length === 0) return
+
+  const eleccion = completas[0].data()
+  const [primero, segundo] = await db.getAll(...eleccion.capitanes.map((id) => db.doc(`penistas/${id}`)))
+  const nombre = (snapPeñista) => snapPeñista.data()?.nombre ?? '—'
+
+  console.log(`Equipos hechos en ${completas.map((e) => e.ref.parent.parent.id).join(', ')}: enviando aviso...`)
+  const destinatarios = await destinatariosActivos()
+  await enviar(destinatarios, {
+    titulo: '⚽ Equipos hechos',
+    cuerpo: `Blanco (${nombre(primero)}) contra Amarillo (${nombre(segundo)}). Entra para ver con quién juegas.`,
+  })
+  for (const e of completas) notificadas.add(e.ref.parent.parent.id)
+  await metaRef.set({ equiposNotificados: [...notificadas] }, { merge: true })
+}
+
 async function avisoResultado() {
   const metaRef = db.doc('meta/notificaciones')
   const meta = (await metaRef.get()).data() ?? {}
@@ -154,6 +197,7 @@ if (penistaPrueba) {
   await avisoPrueba(penistaPrueba)
 } else {
   await avisoSabado()
+  await avisoEquipos()
   await avisoResultado()
 }
 console.log('Comprobación de avisos terminada.')
