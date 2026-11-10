@@ -69,6 +69,14 @@ export default function AdminPeñistas({ peñistas, pin }) {
     <section className="tarjeta">
       <h2 className="titulo-seccion">Peñistas</h2>
       <p className="subtitulo">Alta, baja, edición de nombres y ajustes manuales de puntos.</p>
+      <p className="aviso principal" style={{ marginTop: 10 }}>
+        De {peñistas.filter((p) => p.activo).length} activos: 📱 {peñistas.filter((p) => p.activo && p.appInstaladaEn).length}{' '}
+        con la app instalada · 🔔 {peñistas.filter((p) => p.activo && p.fcmToken).length} con avisos activados.
+        <br />
+        <span style={{ fontSize: '0.75rem' }}>
+          La app instalada se apunta al abrirla desde la pantalla de inicio (se registra desde el 10/11/2026).
+        </span>
+      </p>
 
       <form className="form-inline" style={{ marginTop: 10 }} onSubmit={añadir}>
         <input
@@ -112,6 +120,16 @@ export default function AdminPeñistas({ peñistas, pin }) {
                     <div>
                       {p.nombre}
                       {!p.activo && <span className="etiqueta-pill espera" style={{ marginLeft: 8 }}>de baja</span>}
+                      {p.appInstaladaEn && (
+                        <span className="etiqueta-pill" style={{ marginLeft: 8 }} title="Usa la app instalada">
+                          📱 app
+                        </span>
+                      )}
+                      {p.fcmToken && (
+                        <span className="etiqueta-pill" style={{ marginLeft: 8 }} title="Tiene los avisos activados">
+                          🔔 avisos
+                        </span>
+                      )}
                       {ajuste !== 0 && (
                         <span className="etiqueta-pill" style={{ marginLeft: 8 }}>
                           Ajuste: {ajuste > 0 ? `+${ajuste}` : ajuste}
