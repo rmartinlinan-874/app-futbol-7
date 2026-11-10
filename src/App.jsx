@@ -3,7 +3,6 @@ import { doc, setDoc } from 'firebase/firestore'
 import { db, ensureAuth } from './firebase'
 import { idConvocatoriaActiva } from './lib/dates'
 import { escucharAvisosEnPrimerPlano } from './lib/notificaciones'
-import { registrarAppInstalada } from './lib/instalacion'
 import { useLocalPeñista } from './hooks/useLocalPeñista'
 import { useAdminSession } from './hooks/useAdminSession'
 import { useConfig, usePeñistas, useConvocatoria, useTodasConvocatorias } from './hooks/useFirestore'
@@ -56,14 +55,6 @@ export default function App() {
       })
     }
   }, [authListo, cargandoConfig, config])
-
-  // Quién tiene la app instalada (se ve en Admin > Peñistas).
-  const fichaPeñista = peñista ? peñistas.find((p) => p.id === peñista.id) : null
-  useEffect(() => {
-    if (authListo && fichaPeñista) registrarAppInstalada(fichaPeñista)
-    // Solo al identificarse o cambiar de peñista, no en cada cambio de su ficha.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authListo, fichaPeñista?.id])
 
   const cargando = !authListo || cargandoConfig || cargandoPeñistas || cargandoConvocatoria
   if (cargando) {
