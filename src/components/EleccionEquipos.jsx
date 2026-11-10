@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { capitanesDeLaEleccion } from '../lib/encargados'
 import { estadoEleccion, participantesDelPartido, NOMBRE_EQUIPO } from '../lib/eleccion'
 import { elegirJugador, deshacerEleccion, ErrorEleccion } from '../lib/actions'
+import { AFORO_MIN } from '../lib/aforo'
 import Avatar from './Avatar'
 
 function mensajeDeError(e) {
@@ -51,6 +52,21 @@ export default function EleccionEquipos({
 
   const candidatosIds = aforo.peñistasJuegan.map((r) => r.id)
   const yaEmpezada = eleccion?.capitanes?.length === 2
+
+  // Hasta que no haya el mínimo de jugadores no se sabe quién entra esa
+  // semana, así que no se deciden capitanes (salvo que la elección ya
+  // hubiera empezado: entonces se respetan los que quedaron fijados).
+  if (!yaEmpezada && aforo.totalJugando < AFORO_MIN) {
+    return (
+      <section className="tarjeta">
+        <h2 className="titulo-seccion">Elección de equipos</h2>
+        <p className="subtitulo">
+          Los capitanes se decidirán cuando haya al menos {AFORO_MIN} apuntados para jugar (faltan{' '}
+          {AFORO_MIN - aforo.totalJugando}).
+        </p>
+      </section>
+    )
+  }
 
   // Los capitanes automáticos dependen de la clasificación: hasta que no
   // estén cargadas todas las convocatorias no se pueden calcular bien.
