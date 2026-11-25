@@ -812,14 +812,3 @@ h2.titulo-seccion {
   border-style: solid;
   background: var(--ambar-claro);
 }
-
-.boton-sonido {
-  border: 1px solid var(--borde);
-  background: var(--tarjeta);
-  border-radius: 999px;
-  width: 34px;
-  height: 32px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  line-height: 1;
-}

@@ -81,8 +81,8 @@ async function enviar(destinatarios, { titulo, cuerpo }) {
     webpush: {
       fcmOptions: { link: URL_APP },
       notification: {
-        icon: `${URL_APP}icon-192.png`,
-        badge: `${URL_APP}icon-192.png`,
+        icon: `${URL_APP}icon-192-v2.png`,
+        badge: `${URL_APP}icon-192-v2.png`,
       },
     },
   })

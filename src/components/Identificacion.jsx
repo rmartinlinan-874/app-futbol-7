@@ -7,7 +7,7 @@ export default function Identificacion({ nombrePeña, peñistas, onElegir }) {
     <div className="identificacion">
       <div>
         <img
-          src={`${import.meta.env.BASE_URL}icon-192.png`}
+          src={`${import.meta.env.BASE_URL}icon-192-v2.png`}
           alt=""
           aria-hidden="true"
           width="96"

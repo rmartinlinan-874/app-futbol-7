@@ -40,7 +40,7 @@ export default function TopBar({ nombrePeña, peñista, onCambiarPeñista }) {
         <div>
           <h1>
             <img
-              src={`${import.meta.env.BASE_URL}icon-192.png`}
+              src={`${import.meta.env.BASE_URL}icon-192-v2.png`}
               alt=""
               aria-hidden="true"
               className="logo-inline"
