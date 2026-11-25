@@ -57,7 +57,7 @@ export default function AdminCena({ respuestasCena, peñistas }) {
           <div className="contador ambar">
             <span className="numero">{resumen.sinResponder.length + resumen.consultando.length}</span>
             <span className="etiqueta">
-              Sin decidir{resumen.consultando.length > 0 ? ` (🏠 ${resumen.consultando.length} consultando)` : ''}
+              Sin decidir{resumen.consultando.length > 0 ? ` (🏠 ${resumen.consultando.length} sin preguntar en casa)` : ''}
             </span>
           </div>
           <div className="contador">
@@ -122,7 +122,7 @@ export default function AdminCena({ respuestasCena, peñistas }) {
           {resumen.consultando.length > 0 && (
             <>
               <h2 className="titulo-seccion" style={{ marginTop: resumen.noVan.length ? 12 : 0 }}>
-                🏠 Consultándolo en casa
+                🏠 Aún no le han preguntado a su mujer
               </h2>
               <p className="subtitulo">{resumen.consultando.map((r) => nombreDe(r.id)).join(', ')}</p>
             </>

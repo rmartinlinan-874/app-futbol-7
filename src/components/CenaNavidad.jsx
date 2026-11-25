@@ -106,8 +106,8 @@ function FormularioCena({ peñista, inicial, puedeCancelar, consultando, onTermi
     <div style={{ marginTop: 12 }}>
       {consultando ? (
         <p className="aviso ambar" style={{ marginBottom: 10 }}>
-          🏠 Apuntado como «pendiente de consultarlo en casa». Ya puedes apuntarte al partido, pero cuando lo
-          sepas, dinos aquí si vienes.
+          🏠 Apuntado como «aún no le he preguntado a mi mujer». Ya puedes apuntarte al partido, pero cuando
+          tengas respuesta, dinos aquí si vienes.
         </p>
       ) : (
         !puedeCancelar && (
@@ -139,7 +139,7 @@ function FormularioCena({ peñista, inicial, puedeCancelar, consultando, onTermi
         onClick={() => setAsiste(CONSULTANDO)}
         disabled={guardando}
       >
-        🏠 Aún no lo he consultado en casa
+        🏠 Aún no le he preguntado a mi mujer
       </button>
 
       {asiste === true && (
