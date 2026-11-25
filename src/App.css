@@ -801,3 +801,14 @@ h2.titulo-seccion {
   color: var(--texto-suave);
   font-size: 0.78rem;
 }
+
+.boton-consultar {
+  border: 1.5px dashed var(--ambar);
+  background: var(--tarjeta);
+  color: #7a3d00;
+}
+
+.boton-consultar.activo {
+  border-style: solid;
+  background: var(--ambar-claro);
+}

@@ -50,10 +50,19 @@ export function cenaAbierta(ahora = new Date(), cena = CENA) {
   return ahora < finDelDia
 }
 
-/** ¿Está completa la respuesta? (va + entrantes + principal, o no va). */
+/**
+ * Valor de "asiste" para quien todavía tiene que consultarlo en casa: le deja
+ * apuntarse al partido, pero la cena le sigue saliendo para que decida.
+ */
+export const CONSULTANDO = 'consultando'
+
+/**
+ * ¿Ha respondido lo suficiente para poder marcar si juega? (va + entrantes +
+ * principal, no va, o todavía lo está consultando en casa).
+ */
 export function respuestaCompleta(respuesta, cena = CENA) {
   if (!respuesta) return false
-  if (respuesta.asiste === false) return true
+  if (respuesta.asiste === false || respuesta.asiste === CONSULTANDO) return true
   if (respuesta.asiste !== true) return false
   const entrantes = respuesta.entrantes ?? []
   return (
@@ -78,6 +87,7 @@ export function resumenCena(respuestas, peñistas, cena = CENA) {
   const porId = new Map(respuestas.map((r) => [r.id, r]))
   const van = respuestas.filter((r) => r.asiste === true)
   const noVan = respuestas.filter((r) => r.asiste === false)
+  const consultando = respuestas.filter((r) => r.asiste === CONSULTANDO)
   const sinResponder = activos.filter((p) => !porId.has(p.id))
 
   const votos = cena.entrantes
@@ -100,6 +110,7 @@ export function resumenCena(respuestas, peñistas, cena = CENA) {
   return {
     van,
     noVan,
+    consultando,
     sinResponder,
     votos,
     entrantesGanadores: votos.filter((v) => v.votos > 0).slice(0, cena.maxEntrantes),

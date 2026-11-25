@@ -55,8 +55,10 @@ export default function AdminCena({ respuestasCena, peñistas }) {
             <span className="etiqueta">No van</span>
           </div>
           <div className="contador ambar">
-            <span className="numero">{resumen.sinResponder.length}</span>
-            <span className="etiqueta">Sin responder</span>
+            <span className="numero">{resumen.sinResponder.length + resumen.consultando.length}</span>
+            <span className="etiqueta">
+              Sin decidir{resumen.consultando.length > 0 ? ` (🏠 ${resumen.consultando.length} consultando)` : ''}
+            </span>
           </div>
           <div className="contador">
             <span className="numero">{resumen.total} €</span>
@@ -109,7 +111,7 @@ export default function AdminCena({ respuestasCena, peñistas }) {
         )}
       </section>
 
-      {(resumen.noVan.length > 0 || resumen.sinResponder.length > 0) && (
+      {(resumen.noVan.length > 0 || resumen.consultando.length > 0 || resumen.sinResponder.length > 0) && (
         <section className="tarjeta">
           {resumen.noVan.length > 0 && (
             <>
@@ -117,9 +119,20 @@ export default function AdminCena({ respuestasCena, peñistas }) {
               <p className="subtitulo">{resumen.noVan.map((r) => nombreDe(r.id)).join(', ')}</p>
             </>
           )}
-          {resumen.sinResponder.length > 0 && (
+          {resumen.consultando.length > 0 && (
             <>
               <h2 className="titulo-seccion" style={{ marginTop: resumen.noVan.length ? 12 : 0 }}>
+                🏠 Consultándolo en casa
+              </h2>
+              <p className="subtitulo">{resumen.consultando.map((r) => nombreDe(r.id)).join(', ')}</p>
+            </>
+          )}
+          {resumen.sinResponder.length > 0 && (
+            <>
+              <h2
+                className="titulo-seccion"
+                style={{ marginTop: resumen.noVan.length || resumen.consultando.length ? 12 : 0 }}
+              >
                 Sin responder
               </h2>
               <p className="subtitulo">{resumen.sinResponder.map((p) => p.nombre).join(', ')}</p>

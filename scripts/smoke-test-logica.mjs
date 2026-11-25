@@ -221,6 +221,7 @@ assert.equal(cena.cenaAbierta(new Date(2026, 11, 14, 23, 30)), true, 'el mismo d
 assert.equal(cena.cenaAbierta(new Date(2026, 11, 15, 0, 1)), false, 'el 15 ya no bloquea')
 assert.equal(cena.respuestaCompleta(undefined), false)
 assert.equal(cena.respuestaCompleta({ asiste: false }), true, 'decir que no basta')
+assert.equal(cena.respuestaCompleta({ asiste: cena.CONSULTANDO }), true, 'consultarlo en casa deja apuntarse al partido')
 assert.equal(cena.respuestaCompleta({ asiste: true, entrantes: ['croquetas'], principal: null }), false, 'falta principal')
 assert.equal(cena.respuestaCompleta({ asiste: true, entrantes: [], principal: 'secreto' }), false, 'falta algún entrante')
 assert.equal(
@@ -240,12 +241,14 @@ const rc = cena.resumenCena(
     { id: 'a', asiste: true, entrantes: ['croquetas', 'ibericos'], principal: 'pulpo' },
     { id: 'b', asiste: true, entrantes: ['croquetas', 'langostinos'], principal: 'secreto' },
     { id: 'c', asiste: false, entrantes: [], principal: null },
+    { id: 'd', asiste: cena.CONSULTANDO, entrantes: [], principal: null },
   ],
   peñistasCena,
 )
 assert.equal(rc.van.length, 2)
 assert.equal(rc.noVan.length, 1)
-assert.deepEqual(rc.sinResponder.map((p) => p.id), ['d'])
+assert.deepEqual(rc.consultando.map((r) => r.id), ['d'])
+assert.deepEqual(rc.sinResponder.map((p) => p.id), [])
 assert.equal(rc.votos[0].id, 'croquetas', 'el más votado primero')
 assert.equal(rc.entrantesGanadores.length, 3, 'solo cuentan entrantes con algún voto')
 assert.equal(rc.total, 35 * 2 + 5, 'precio más el suplemento del pulpo')

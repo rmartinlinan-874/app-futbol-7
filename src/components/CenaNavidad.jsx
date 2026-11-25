@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CENA, nombrePlato, respuestaCompleta } from '../lib/cena'
+import { CENA, CONSULTANDO, nombrePlato, respuestaCompleta } from '../lib/cena'
 import { formatearFechaLarga } from '../lib/dates'
 import { guardarRespuestaCena } from '../lib/actions'
 import { lanzarConfeti } from '../lib/confeti'
@@ -13,7 +13,10 @@ import { lanzarConfeti } from '../lib/confeti'
 export default function CenaNavidad({ peñista, miRespuesta, resumen }) {
   const completa = respuestaCompleta(miRespuesta)
   const [editando, setEditando] = useState(false)
-  const mostrarFormulario = !completa || editando
+  // Quien aún lo está consultando en casa ve el formulario abierto para que
+  // no se le olvide, aunque ya pueda apuntarse al partido.
+  const consultando = miRespuesta?.asiste === CONSULTANDO
+  const mostrarFormulario = !completa || editando || consultando
 
   return (
     <section className={`tarjeta tarjeta-cena ${mostrarFormulario ? 'abierta' : ''}`}>
@@ -36,7 +39,8 @@ export default function CenaNavidad({ peñista, miRespuesta, resumen }) {
           key={peñista.id}
           peñista={peñista}
           inicial={miRespuesta}
-          puedeCancelar={completa}
+          puedeCancelar={completa && !consultando}
+          consultando={consultando}
           onTerminar={() => setEditando(false)}
         />
       ) : (
@@ -67,7 +71,7 @@ function ResumenMiCena({ respuesta, onCambiar }) {
   )
 }
 
-function FormularioCena({ peñista, inicial, puedeCancelar, onTerminar }) {
+function FormularioCena({ peñista, inicial, puedeCancelar, consultando, onTerminar }) {
   const [asiste, setAsiste] = useState(inicial?.asiste ?? null)
   const [entrantes, setEntrantes] = useState(inicial?.entrantes ?? [])
   const [principal, setPrincipal] = useState(inicial?.principal ?? null)
@@ -75,7 +79,8 @@ function FormularioCena({ peñista, inicial, puedeCancelar, onTerminar }) {
   const [error, setError] = useState(null)
 
   const lleno = entrantes.length >= CENA.maxEntrantes
-  const listo = asiste === false || (asiste === true && entrantes.length >= 1 && principal)
+  const listo =
+    asiste === false || asiste === CONSULTANDO || (asiste === true && entrantes.length >= 1 && principal)
 
   function alternarEntrante(id) {
     setEntrantes((actual) =>
@@ -88,7 +93,7 @@ function FormularioCena({ peñista, inicial, puedeCancelar, onTerminar }) {
     setError(null)
     try {
       await guardarRespuestaCena(CENA.id, peñista.id, { asiste, entrantes, principal })
-      if (asiste) lanzarConfeti()
+      if (asiste === true) lanzarConfeti()
       onTerminar()
     } catch {
       setError('No se ha podido guardar. Comprueba la conexión e inténtalo otra vez.')
@@ -99,10 +104,17 @@ function FormularioCena({ peñista, inicial, puedeCancelar, onTerminar }) {
 
   return (
     <div style={{ marginTop: 12 }}>
-      {!puedeCancelar && (
+      {consultando ? (
         <p className="aviso ambar" style={{ marginBottom: 10 }}>
-          Antes de apuntarte al partido, dinos si vienes a la cena.
+          🏠 Apuntado como «pendiente de consultarlo en casa». Ya puedes apuntarte al partido, pero cuando lo
+          sepas, dinos aquí si vienes.
         </p>
+      ) : (
+        !puedeCancelar && (
+          <p className="aviso ambar" style={{ marginBottom: 10 }}>
+            Antes de apuntarte al partido, dinos si vienes a la cena.
+          </p>
+        )
       )}
 
       <div className="fila-toggle">
@@ -121,6 +133,14 @@ function FormularioCena({ peñista, inicial, puedeCancelar, onTerminar }) {
           😢 No voy
         </button>
       </div>
+      <button
+        className={`boton boton-bloque ${asiste === CONSULTANDO ? 'boton-consultar activo' : 'boton-secundario'}`}
+        style={{ marginTop: 8 }}
+        onClick={() => setAsiste(CONSULTANDO)}
+        disabled={guardando}
+      >
+        🏠 Aún no lo he consultado en casa
+      </button>
 
       {asiste === true && (
         <>

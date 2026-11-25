@@ -60,7 +60,7 @@ service cloud.firestore {
       allow delete: if estaAutenticado();
       allow create, update: if estaAutenticado() &&
         request.resource.data.keys().hasOnly(['asiste', 'entrantes', 'principal', 'timestamp']) &&
-        request.resource.data.asiste is bool &&
+        (request.resource.data.asiste is bool || request.resource.data.asiste == 'consultando') &&
         request.resource.data.entrantes is list &&
         request.resource.data.entrantes.size() <= 8 &&
         (request.resource.data.principal == null || request.resource.data.principal is string);

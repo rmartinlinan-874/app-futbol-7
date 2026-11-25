@@ -15,7 +15,7 @@ export default function Identificacion({ nombrePeña, peñistas, onElegir }) {
           style={{ borderRadius: 22, marginBottom: 8 }}
         />
         <h1 style={{ margin: 0 }}>{nombrePeña}</h1>
-        <p className="lema-patrocinio">Hueco disponible para patrocinador. Aceptamos pago en camisetas.</p>
+        <p className="lema-patrocinio">Hueco disponible para patrocinador. Aceptamos pago en camisetas, balones o cerveza.</p>
         <p className="subtitulo" style={{ marginTop: 14 }}>
           ¿Quién eres?
         </p>

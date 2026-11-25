@@ -181,10 +181,11 @@ export async function cambiarConfig(cambios, pin) {
 // --- Cena (ver lib/cena.js) ---
 
 export async function guardarRespuestaCena(idCena, peñistaId, { asiste, entrantes = [], principal = null }) {
+  const va = asiste === true
   await setDoc(doc(db, 'cenas', idCena, 'respuestas', peñistaId), {
     asiste,
-    entrantes: asiste ? entrantes : [],
-    principal: asiste ? principal : null,
+    entrantes: va ? entrantes : [],
+    principal: va ? principal : null,
     timestamp: serverTimestamp(),
   })
 }
