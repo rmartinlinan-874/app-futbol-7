@@ -6,8 +6,19 @@ export default function Identificacion({ nombrePeña, peñistas, onElegir }) {
   return (
     <div className="identificacion">
       <div>
+        <img
+          src={`${import.meta.env.BASE_URL}icon-192.png`}
+          alt=""
+          aria-hidden="true"
+          width="96"
+          height="96"
+          style={{ borderRadius: 22, marginBottom: 8 }}
+        />
         <h1 style={{ margin: 0 }}>{nombrePeña}</h1>
-        <p className="subtitulo">¿Quién eres?</p>
+        <p className="lema-patrocinio">Hueco disponible para patrocinador. Aceptamos pago en camisetas.</p>
+        <p className="subtitulo" style={{ marginTop: 14 }}>
+          ¿Quién eres?
+        </p>
       </div>
 
       {activos.length === 0 ? (

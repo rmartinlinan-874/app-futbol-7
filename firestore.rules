@@ -52,6 +52,20 @@ service cloud.firestore {
             (request.resource.data.fcmTokens is list && request.resource.data.fcmTokens.size() <= 20)));
     }
 
+    // Cenas de la peña (p. ej. la de Navidad): cada peñista dice si va y qué
+    // platos quiere. Abierto a cualquier peñista identificado, como las
+    // respuestas de la convocatoria; solo se valida la forma.
+    match /cenas/{cenaId}/respuestas/{penistaId} {
+      allow read: if estaAutenticado();
+      allow delete: if estaAutenticado();
+      allow create, update: if estaAutenticado() &&
+        request.resource.data.keys().hasOnly(['asiste', 'entrantes', 'principal', 'timestamp']) &&
+        request.resource.data.asiste is bool &&
+        request.resource.data.entrantes is list &&
+        request.resource.data.entrantes.size() <= 8 &&
+        (request.resource.data.principal == null || request.resource.data.principal is string);
+    }
+
     match /convocatorias/{convocatoriaId} {
       allow read: if estaAutenticado();
       // Se crea automáticamente al abrir la app (sin datos sensibles). La misma

@@ -1,20 +1,28 @@
 :root {
   color-scheme: light;
-  /* Paleta "Domino's Peña": azul y rojo de Domino's Pizza + balón de fútbol. */
-  --primario: #0064b4;
-  --primario-oscuro: #004a82;
-  --primario-claro: #e5f1fa;
-  --rojo: #e31837;
-  --rojo-claro: #fce8ea;
-  --ambar: #b8860b;
-  --ambar-claro: #fdf3d9;
-  --texto: #1c1e21;
-  --texto-suave: #5f6368;
-  --fondo: #f4f6f5;
+  /* Paleta "a petición de Willy": morado, rosa, cian y verde césped.
+     (La anterior era la azul y roja de cuando éramos "Domino's Peña".) */
+  --primario: #7b2ff7;
+  --primario-oscuro: #4c1d95;
+  --primario-claro: #f1e8ff;
+  --rosa: #ff3d77;
+  --cian: #00b8e6;
+  --verde: #15a34a;
+  --verde-claro: #dcfce7;
+  --rojo: #e5233f;
+  --rojo-claro: #ffe4e8;
+  --ambar: #c2620a;
+  --ambar-claro: #ffefcc;
+  --cielo: #0477b8;
+  --cielo-claro: #dff3ff;
+  --degradado: linear-gradient(120deg, #ff3d77 0%, #7b2ff7 52%, #00b8e6 100%);
+  --texto: #1d1430;
+  --texto-suave: #5e5672;
+  --fondo: #fbf7ff;
   --tarjeta: #ffffff;
-  --borde: #e1e4e1;
-  --radio: 14px;
-  --sombra: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --borde: #e8def6;
+  --radio: 16px;
+  --sombra: 0 2px 10px rgba(91, 33, 182, 0.09);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -30,7 +38,12 @@ body,
 
 body {
   margin: 0;
-  background: var(--fondo);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255, 61, 119, 0.1), transparent 32%),
+    radial-gradient(circle at 92% 30%, rgba(0, 184, 230, 0.1), transparent 30%),
+    radial-gradient(circle at 20% 85%, rgba(123, 47, 247, 0.1), transparent 34%),
+    var(--fondo);
+  background-attachment: fixed;
   color: var(--texto);
   -webkit-tap-highlight-color: transparent;
 }
@@ -49,7 +62,6 @@ input {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--fondo);
 }
 
 .pantalla-carga,
@@ -93,8 +105,9 @@ input {
 }
 
 .boton-primario {
-  background: var(--primario);
+  background: var(--degradado);
   color: white;
+  box-shadow: 0 3px 10px rgba(123, 47, 247, 0.3);
 }
 
 .boton-secundario {

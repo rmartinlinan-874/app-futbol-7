@@ -2,9 +2,11 @@ import { useState } from 'react'
 import AdminConvocatoria from './AdminConvocatoria'
 import AdminPeñistas from './AdminPeñistas'
 import AdminAjustes from './AdminAjustes'
+import AdminCena from './AdminCena'
 
 const PESTAÑAS = [
   { id: 'convocatoria', etiqueta: 'Convocatoria' },
+  { id: 'cena', etiqueta: 'Cena 🎄' },
   { id: 'peñistas', etiqueta: 'Peñistas' },
   { id: 'ajustes', etiqueta: 'Ajustes' },
 ]
@@ -17,6 +19,7 @@ export default function AdminScreen({
   eleccion,
   peñistas,
   convocatorias,
+  respuestasCena = [],
   config,
   pin,
   onCambiarPin,
@@ -50,6 +53,8 @@ export default function AdminScreen({
           pin={pin}
         />
       )}
+
+      {pestaña === 'cena' && <AdminCena respuestasCena={respuestasCena} peñistas={peñistas} />}
 
       {pestaña === 'peñistas' && <AdminPeñistas peñistas={peñistas} pin={pin} />}
 

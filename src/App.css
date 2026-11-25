@@ -3,8 +3,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  background: var(--primario);
+  background: var(--degradado);
   color: white;
+  box-shadow: 0 4px 16px rgba(123, 47, 247, 0.25);
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
 }
 
 .barra-superior h1 {
@@ -112,9 +115,10 @@
 }
 
 .nav-inferior button.activo {
-  color: var(--primario);
-  background: var(--primario-claro);
-  font-weight: 600;
+  color: white;
+  background: var(--degradado);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(123, 47, 247, 0.3);
 }
 
 .nav-inferior .icono {
@@ -166,12 +170,36 @@ h2.titulo-seccion {
   color: var(--texto-suave);
 }
 
+.contador {
+  border-top: 4px solid var(--cielo);
+  background: linear-gradient(180deg, var(--cielo-claro), var(--tarjeta) 70%);
+}
+
+.contador .numero {
+  color: var(--cielo);
+}
+
+.contador.principal {
+  border-top-color: var(--verde);
+  background: linear-gradient(180deg, var(--verde-claro), var(--tarjeta) 70%);
+}
+
 .contador.principal .numero {
-  color: var(--primario);
+  color: var(--verde);
+}
+
+.contador.rojo {
+  border-top-color: var(--rojo);
+  background: linear-gradient(180deg, var(--rojo-claro), var(--tarjeta) 70%);
 }
 
 .contador.rojo .numero {
   color: var(--rojo);
+}
+
+.contador.ambar {
+  border-top-color: var(--ambar);
+  background: linear-gradient(180deg, var(--ambar-claro), var(--tarjeta) 70%);
 }
 
 .contador.ambar .numero {
@@ -186,7 +214,7 @@ h2.titulo-seccion {
 
 .aviso.ambar {
   background: var(--ambar-claro);
-  color: #7a5c00;
+  color: #7a3d00;
 }
 
 .aviso.principal {
@@ -230,7 +258,7 @@ h2.titulo-seccion {
 
 .etiqueta-pill.espera {
   background: var(--ambar-claro);
-  color: #7a5c00;
+  color: #7a3d00;
 }
 
 .form-inline {
@@ -334,9 +362,10 @@ h2.titulo-seccion {
 }
 
 .pestañas-admin button.activo {
-  background: var(--primario);
+  background: var(--degradado);
   color: white;
-  border-color: var(--primario);
+  border-color: transparent;
+  font-weight: 600;
 }
 
 .fila-equipo {
@@ -482,4 +511,293 @@ button.jugador-elegible {
 button.jugador-elegible:disabled {
   opacity: 0.6;
   cursor: wait;
+}
+
+/* --- Tarjetas con un toque de color (a petición de Willy) --- */
+.contenido > .tarjeta {
+  border-top: 4px solid var(--primario);
+}
+
+.contenido > .tarjeta:nth-child(4n + 1) {
+  border-top-color: var(--rosa);
+}
+
+.contenido > .tarjeta:nth-child(4n + 2) {
+  border-top-color: var(--primario);
+}
+
+.contenido > .tarjeta:nth-child(4n + 3) {
+  border-top-color: var(--cian);
+}
+
+.contenido > .tarjeta:nth-child(4n) {
+  border-top-color: var(--verde);
+}
+
+h2.titulo-seccion {
+  color: var(--primario-oscuro);
+}
+
+.tabla-clasificacion tr:nth-child(1) td:first-child::after {
+  content: ' 🥇';
+}
+
+.tabla-clasificacion tr:nth-child(2) td:first-child::after {
+  content: ' 🥈';
+}
+
+.tabla-clasificacion tr:nth-child(3) td:first-child::after {
+  content: ' 🥉';
+}
+
+.lema-patrocinio {
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+  margin: 6px 0 0;
+}
+
+/* --- Cena de Navidad --- */
+.contenido > .tarjeta.tarjeta-cena {
+  border-top: 4px solid #c8102e;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(200, 16, 46, 0.08), transparent 45%),
+    radial-gradient(circle at 0% 100%, rgba(21, 128, 61, 0.08), transparent 45%),
+    var(--tarjeta);
+}
+
+.tarjeta-cena.abierta {
+  box-shadow: 0 0 0 2px rgba(200, 16, 46, 0.25), var(--sombra);
+}
+
+.cena-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cena-icono {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.contador-cena {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--primario-claro);
+  color: var(--primario-oscuro);
+  font-size: 0.75rem;
+}
+
+.opciones-cena {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.opcion-cena {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid var(--borde);
+  background: var(--tarjeta);
+  color: var(--texto);
+  text-align: left;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.opcion-cena.marcada {
+  border-color: var(--primario);
+  background: var(--primario-claro);
+  font-weight: 600;
+}
+
+.opcion-cena:disabled:not(.marcada) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.opcion-emoji {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.opcion-nombre {
+  flex: 1;
+}
+
+.opcion-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--borde);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: white;
+  font-size: 0.8rem;
+}
+
+.opcion-cena.marcada .opcion-check {
+  background: var(--primario);
+  border-color: var(--primario);
+}
+
+.etiqueta-pill.suplemento {
+  margin-left: 6px;
+  background: var(--ambar-claro);
+  color: #7a3d00;
+  white-space: nowrap;
+}
+
+.lista-votos {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.voto-texto {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.voto-barra {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--primario-claro);
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.voto-barra span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #c4b5fd;
+}
+
+.lista-votos li.ganador .voto-barra span {
+  background: var(--degradado);
+}
+
+/* --- Firma de Willy, cartel de obras y Modo Willy --- */
+.firma-willy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+  padding: 4px 2px;
+}
+
+.boton-willy {
+  border: none;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: white;
+  background: linear-gradient(90deg, #ff3d77, #ffb800, #15a34a, #00b8e6, #7b2ff7);
+  background-size: 200% 100%;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.contenido > .tarjeta.cartel-obras {
+  border: 2px dashed #ffb800;
+  border-top-width: 2px;
+  background: repeating-linear-gradient(-45deg, #fff8e1 0 14px, #ffffff 14px 28px);
+}
+
+.cartel-obras p {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+}
+
+.confeti {
+  position: fixed;
+  top: -12px;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 1000;
+  animation: caer-confeti linear forwards;
+}
+
+@keyframes caer-confeti {
+  to {
+    transform: translate3d(var(--deriva, 0), 105vh, 0) rotate(var(--giro, 540deg));
+    opacity: 0.9;
+  }
+}
+
+/* Modo Willy: lo mismo pero subido de vueltas. Solo en el móvil de quien lo
+   active (se guarda en ese dispositivo). */
+.modo-willy {
+  font-family: 'Comic Sans MS', 'Comic Neue', 'Chalkboard SE', 'Marker Felt', cursive;
+}
+
+.modo-willy .barra-superior,
+.modo-willy .boton-primario,
+.modo-willy .nav-inferior button.activo,
+.modo-willy .boton-willy {
+  background: linear-gradient(90deg, #ff3d77, #ffb800, #15a34a, #00b8e6, #7b2ff7, #ff3d77);
+  background-size: 300% 100%;
+  animation: arcoiris 6s linear infinite;
+}
+
+.modo-willy .contenido > .tarjeta:nth-child(odd) {
+  transform: rotate(-0.6deg);
+}
+
+.modo-willy .contenido > .tarjeta:nth-child(even) {
+  transform: rotate(0.6deg);
+}
+
+.modo-willy .contenido > .tarjeta {
+  border-top-width: 6px;
+}
+
+.modo-willy h2.titulo-seccion::before {
+  content: '✨ ';
+}
+
+@keyframes arcoiris {
+  to {
+    background-position: 300% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modo-willy .barra-superior,
+  .modo-willy .boton-primario,
+  .modo-willy .nav-inferior button.activo,
+  .modo-willy .boton-willy {
+    animation: none;
+  }
+
+  .confeti {
+    display: none;
+  }
+}
+
+.meta {
+  color: var(--texto-suave);
+  font-size: 0.78rem;
 }

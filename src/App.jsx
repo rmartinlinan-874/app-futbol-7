@@ -5,7 +5,8 @@ import { idConvocatoriaActiva } from './lib/dates'
 import { escucharAvisosEnPrimerPlano } from './lib/notificaciones'
 import { useLocalPeñista } from './hooks/useLocalPeñista'
 import { useAdminSession } from './hooks/useAdminSession'
-import { useConfig, usePeñistas, useConvocatoria, useTodasConvocatorias } from './hooks/useFirestore'
+import { useConfig, usePeñistas, useConvocatoria, useTodasConvocatorias, useCena } from './hooks/useFirestore'
+import { CENA, cenaAbierta } from './lib/cena'
 import Identificacion from './components/Identificacion'
 import TopBar from './components/TopBar'
 import BottomNav from './components/BottomNav'
@@ -13,6 +14,7 @@ import ConvocatoriaScreen from './components/ConvocatoriaScreen'
 import ClasificacionScreen from './components/ClasificacionScreen'
 import AdminLoginScreen from './components/AdminLoginScreen'
 import AdminScreen from './components/admin/AdminScreen'
+import { CartelObras, FirmaWilly, useModoWilly } from './components/Willy'
 import './App.css'
 
 const NOMBRE_PEÑA_POR_DEFECTO = 'Mi Peña'
@@ -38,10 +40,12 @@ export default function App() {
   const { peñistas, cargando: cargandoPeñistas } = usePeñistas()
   const { convocatoria, respuestas, invitados, eleccion, cargando: cargandoConvocatoria } = useConvocatoria(idConvocatoria)
   const { convocatorias, cargando: cargandoTodas } = useTodasConvocatorias()
+  const { respuestas: respuestasCena, cargando: cargandoCena } = useCena(CENA.id, authListo)
 
   const [peñista, setPeñista] = useLocalPeñista()
   const { pin, esAdmin, entrar, salir } = useAdminSession()
   const [pantalla, setPantalla] = useState('convocatoria')
+  const [modoWilly, setModoWilly] = useModoWilly()
 
   // Primera vez que se despliega la app: crea el documento de configuración
   // con valores por defecto (editables luego desde Admin > Ajustes).
@@ -56,7 +60,10 @@ export default function App() {
     }
   }, [authListo, cargandoConfig, config])
 
-  const cargando = !authListo || cargandoConfig || cargandoPeñistas || cargandoConvocatoria
+  // Mientras la cena esté abierta hay que esperar a sus respuestas para no
+  // enseñar un momento el formulario a quien ya respondió.
+  const cargando =
+    !authListo || cargandoConfig || cargandoPeñistas || cargandoConvocatoria || (cenaAbierta() && cargandoCena)
   if (cargando) {
     return (
       <div className="pantalla-carga">
@@ -79,6 +86,7 @@ export default function App() {
       eleccion={eleccion}
       peñistas={peñistas}
       convocatorias={convocatorias}
+      respuestasCena={respuestasCena}
       config={config}
       pin={pin}
       onCambiarPin={entrar}
@@ -122,6 +130,8 @@ export default function App() {
       <TopBar nombrePeña={nombrePeña} peñista={peñistaActual} onCambiarPeñista={() => setPeñista(null)} />
 
       <main className="contenido">
+        <CartelObras />
+
         {pantalla === 'convocatoria' && (
           <ConvocatoriaScreen
             idConvocatoria={idConvocatoria}
@@ -131,6 +141,7 @@ export default function App() {
             respuestas={respuestas}
             invitados={invitados}
             eleccion={eleccion}
+            respuestasCena={respuestasCena}
           />
         )}
 
@@ -142,6 +153,8 @@ export default function App() {
           ))}
 
         {pantalla === 'admin' && panelAdmin}
+
+        <FirmaWilly modoWilly={modoWilly} onCambiarModo={setModoWilly} />
       </main>
 
       <BottomNav pantalla={pantalla} onCambiar={setPantalla} />

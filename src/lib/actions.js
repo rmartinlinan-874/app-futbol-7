@@ -177,3 +177,18 @@ export async function verificarPin(pinIntroducido, config) {
 export async function cambiarConfig(cambios, pin) {
   await setDoc(doc(db, 'config', 'general'), { ...cambios, adminPin: pin }, { merge: true })
 }
+
+// --- Cena (ver lib/cena.js) ---
+
+export async function guardarRespuestaCena(idCena, peñistaId, { asiste, entrantes = [], principal = null }) {
+  await setDoc(doc(db, 'cenas', idCena, 'respuestas', peñistaId), {
+    asiste,
+    entrantes: asiste ? entrantes : [],
+    principal: asiste ? principal : null,
+    timestamp: serverTimestamp(),
+  })
+}
+
+export async function borrarRespuestaCena(idCena, peñistaId) {
+  await deleteDoc(doc(db, 'cenas', idCena, 'respuestas', peñistaId))
+}

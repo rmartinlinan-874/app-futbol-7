@@ -7,7 +7,7 @@ on:
     branches: [main]
     paths:
       - "firestore.rules"
-      - "firestore.indexes.json"
+      - "scripts/desplegar-reglas.mjs"
   workflow_dispatch:
 
 concurrency:
@@ -23,13 +23,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
-      - name: Credenciales de la cuenta de servicio
-        run: echo "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/cuenta.json"
+      - run: npm ci
+
+      - run: node scripts/desplegar-reglas.mjs
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-
-      - name: Desplegar reglas
-        run: npx --yes firebase-tools@14 deploy --only firestore:rules --project app-futbol-7 --non-interactive
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/cuenta.json

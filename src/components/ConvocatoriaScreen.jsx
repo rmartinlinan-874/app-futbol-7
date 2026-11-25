@@ -5,6 +5,9 @@ import { marcarRespuesta, apuntarInvitado, quitarInvitado } from '../lib/actions
 import Avatar from './Avatar'
 import AvisoNotificaciones from './AvisoNotificaciones'
 import EleccionEquipos from './EleccionEquipos'
+import CenaNavidad from './CenaNavidad'
+import { cenaAbierta, respuestaCompleta, resumenCena } from '../lib/cena'
+import { lanzarConfeti, modoWillyActivo } from '../lib/confeti'
 
 export default function ConvocatoriaScreen({
   idConvocatoria,
@@ -14,6 +17,7 @@ export default function ConvocatoriaScreen({
   respuestas,
   invitados,
   eleccion,
+  respuestasCena = [],
 }) {
   const [nombreInvitado, setNombreInvitado] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -34,6 +38,7 @@ export default function ConvocatoriaScreen({
     setEnviando(true)
     try {
       await marcarRespuesta(idConvocatoria, peñista.id, juega)
+      if (juega && modoWillyActivo()) lanzarConfeti()
     } finally {
       setEnviando(false)
     }
@@ -58,9 +63,23 @@ export default function ConvocatoriaScreen({
 
   const estaEnEspera = aforo.peñistasEnEspera.some((r) => r.id === peñista.id)
 
+  // Cena de Navidad: hasta el día de la cena, hay que responder antes de
+  // poder marcar si juegas.
+  const hayCena = cenaAbierta()
+  const miRespuestaCena = respuestasCena.find((r) => r.id === peñista.id)
+  const faltaCena = hayCena && !respuestaCompleta(miRespuestaCena)
+
   return (
     <>
       <AvisoNotificaciones peñista={peñista} />
+
+      {hayCena && (
+        <CenaNavidad
+          peñista={peñista}
+          miRespuesta={miRespuestaCena}
+          resumen={resumenCena(respuestasCena, peñistas)}
+        />
+      )}
 
       <section className="tarjeta">
         <h2 className="titulo-seccion">Próximo partido</h2>
@@ -68,22 +87,28 @@ export default function ConvocatoriaScreen({
           {formatearFechaLarga(idConvocatoria)} · {horaPartidoTexto()}
         </p>
 
-        <div className="fila-toggle" style={{ marginTop: 12 }}>
-          <button
-            className={`boton ${miRespuesta?.juega ? 'boton-primario' : 'boton-secundario'}`}
-            disabled={enviando}
-            onClick={() => elegir(true)}
-          >
-            ✅ Juego
-          </button>
-          <button
-            className={`boton ${miRespuesta && !miRespuesta.juega ? 'boton-peligro' : 'boton-secundario'}`}
-            disabled={enviando}
-            onClick={() => elegir(false)}
-          >
-            ❌ No juego
-          </button>
-        </div>
+        {faltaCena ? (
+          <p className="aviso ambar" style={{ marginTop: 12 }}>
+            🎄 Primero dinos arriba si vienes a la cena, y luego ya podrás apuntarte al partido.
+          </p>
+        ) : (
+          <div className="fila-toggle" style={{ marginTop: 12 }}>
+            <button
+              className={`boton ${miRespuesta?.juega ? 'boton-primario' : 'boton-secundario'}`}
+              disabled={enviando}
+              onClick={() => elegir(true)}
+            >
+              ✅ Juego
+            </button>
+            <button
+              className={`boton ${miRespuesta && !miRespuesta.juega ? 'boton-peligro' : 'boton-secundario'}`}
+              disabled={enviando}
+              onClick={() => elegir(false)}
+            >
+              ❌ No juego
+            </button>
+          </div>
+        )}
 
         {estaEnEspera && (
           <p className="aviso ambar" style={{ marginTop: 10 }}>

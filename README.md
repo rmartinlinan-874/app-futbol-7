@@ -49,30 +49,16 @@ el documento `config/general` con nombre de peña **"Mi Peña"** y PIN de admin
 **1234**. Entra en la pestaña **Admin** con ese PIN y, desde **Ajustes**, cambia el
 nombre de la peña y el PIN; desde **Peñistas**, da de alta a la plantilla real.
 
-## Desplegar en GitHub Pages
+## Publicar
 
-1. Crea un repositorio en GitHub (puede ser este mismo proyecto) y súbelo:
+Cada cambio que se sube a `main` se publica solo en GitHub Pages
+(`.github/workflows/publicar.yml`), usando la configuración pública de
+Firebase que está en `.env.production`. Si cambia `firestore.rules`, las reglas
+se despliegan solas con la cuenta de servicio de los avisos
+(`.github/workflows/reglas.yml`). `npm run deploy` desde un ordenador sigue
+funcionando como alternativa.
 
-   ```bash
-   git init
-   git add .
-   git commit -m "App Peña inicial"
-   git branch -M main
-   git remote add origin https://github.com/<tu-usuario>/<nombre-repo>.git
-   git push -u origin main
-   ```
-
-2. En `.env`, pon `VITE_BASE_PATH=/<nombre-repo>/` (tiene que coincidir con el
-   nombre del repositorio).
-3. Publica:
-
-   ```bash
-   npm run deploy
-   ```
-
-   Esto construye la app y la sube a la rama `gh-pages` con el paquete `gh-pages`.
-4. En GitHub → Settings → Pages, selecciona como origen la rama `gh-pages`. La
-   app quedará accesible en `https://<tu-usuario>.github.io/<nombre-repo>/`.
+La app queda en <https://rmartinlinan-874.github.io/app-futbol-7/>.
 
 ## Reglas de negocio implementadas
 
@@ -92,22 +78,29 @@ nombre de la peña y el PIN; desde **Peñistas**, da de alta a la plantilla real
   como A/B, es solo una cuestión de etiqueta).
 - **Puntos**: victoria 3, empate 2, derrota 1, no jugar 0. Cerveza postpartido +0,5
   (acumulable). Los invitados no puntúan ni salen en la clasificación.
-- **Encargados**: son los dos primeros de la clasificación entre los peñistas
-  confirmados para jugar ese día (nunca invitados). Empate a puntos: gana quien
-  menos veces haya sido encargado antes. Si el empate persiste, por un sorteo
-  fijo calculado a partir de la fecha de la convocatoria (así todos los móviles
-  sacan los mismos capitanes sin que nadie tenga que sortear). La app los
-  calcula sola; el admin puede fijarlos a mano si quiere.
+- **Encargados (capitanes)**: salen al azar entre los peñistas confirmados para
+  jugar ese día (nunca invitados), y también al azar quién empieza a elegir. El
+  sorteo automático usa la fecha de la convocatoria como semilla, así que todos
+  los móviles sacan los mismos capitanes sin que nadie tenga que sortear. El
+  admin puede volver a sortear con un botón (sorteo distinto cada vez).
 - **Elección de equipos**: en la pestaña Convocatoria, los dos capitanes eligen
-  jugadores por turnos desde su móvil. El 1º clasificado lleva el Blanco y el
-  2º el Amarillo. Orden: 2º, 1º, 1º y a partir de ahí alternos (2º, 1º, 2º…).
-  No se deciden capitanes hasta que haya al menos 14 apuntados para jugar
-  (el mínimo del aforo, contando invitados confirmados). Los capitanes
-  quedan fijados con la primera elección; hasta entonces son provisionales. Cada capitán puede deshacer su última elección mientras el
-  otro no haya elegido, y el admin puede reiniciar la elección entera. Los
-  equipos que salen se cargan solos en el formulario de resultado. Se guarda
-  en `convocatorias/{id}/eleccion/estado` y cada movimiento va en una
-  transacción, para que dos móviles no puedan elegir a la vez.
+  jugadores por turnos desde su móvil. Empieza el que haya salido en el sorteo
+  (lleva el Amarillo), luego el otro (Blanco) elige dos seguidos y a partir de ahí
+  alternos. No se deciden capitanes hasta que haya al menos 14 apuntados para
+  jugar (el mínimo del aforo, contando invitados confirmados). Los capitanes
+  quedan fijados con la primera elección; hasta entonces son provisionales. Cada
+  capitán puede deshacer su última elección mientras el otro no haya elegido, y
+  el admin puede reiniciar la elección entera. Los equipos que salen se cargan
+  solos en el formulario de resultado. Se guarda en
+  `convocatorias/{id}/eleccion/estado` y cada movimiento va en una transacción.
+- **Cena de Navidad** (`src/lib/cena.js`): hasta el día de la cena, cada peñista
+  tiene que decir si va (y, si va, votar hasta 4 entrantes y elegir su plato
+  principal) antes de poder marcar si juega. Se guarda en
+  `cenas/{id}/respuestas/{peñista}`. El resumen (votos, platos, total y texto
+  para el restaurante) está en Admin → Cena. Para otra cena basta con cambiar el
+  objeto `CENA`.
+- **Avisos**: cada peñista puede tener varios dispositivos (`fcmTokens`). Al
+  abrir la app con el permiso concedido, el token se renueva en silencio.
 - **Fotos de perfil**: cualquier peñista puede subir o cambiar la foto de
   cualquiera (no hay contraseñas, ver "Seguridad" más abajo) tocando su
   avatar en la barra superior. Se guardan como imagen pequeña incrustada en

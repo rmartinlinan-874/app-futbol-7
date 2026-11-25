@@ -12,6 +12,7 @@ on:
       - "scripts/notificaciones.mjs"
       - ".github/workflows/notificaciones.yml"
       - ".github/workflows/reglas.yml"
+      - "scripts/desplegar-reglas.mjs"
   workflow_dispatch:
 
 permissions:

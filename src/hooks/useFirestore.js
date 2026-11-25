@@ -88,3 +88,21 @@ export function useTodasConvocatorias() {
 
   return { convocatorias, cargando }
 }
+
+/** Respuestas de una cena (cenas/{idCena}/respuestas), en vivo. */
+export function useCena(idCena, activa = true) {
+  const [respuestas, setRespuestas] = useState([])
+  const [cargando, setCargando] = useState(activa)
+
+  useEffect(() => {
+    if (!idCena || !activa) return
+    const ref = collection(db, 'cenas', idCena, 'respuestas')
+    const unsubscribe = onSnapshot(ref, (snap) => {
+      setRespuestas(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+      setCargando(false)
+    })
+    return unsubscribe
+  }, [idCena, activa])
+
+  return { respuestas, cargando }
+}
