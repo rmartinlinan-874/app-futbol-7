@@ -15,6 +15,10 @@ import ClasificacionScreen from './components/ClasificacionScreen'
 import AdminLoginScreen from './components/AdminLoginScreen'
 import AdminScreen from './components/admin/AdminScreen'
 import { CartelObras, FirmaWilly, useModoWilly } from './components/Willy'
+import Bienvenida from './components/Bienvenida'
+
+// Tiempo mínimo que se ve la pantalla de bienvenida con el logo al abrir la app.
+const DURACION_BIENVENIDA_MS = 2500
 import './App.css'
 
 const NOMBRE_PEÑA_POR_DEFECTO = 'Mi Peña'
@@ -64,13 +68,30 @@ export default function App() {
   // enseñar un momento el formulario a quien ya respondió.
   const cargando =
     !authListo || cargandoConfig || cargandoPeñistas || cargandoConvocatoria || (cenaAbierta() && cargandoCena)
-  if (cargando) {
-    return (
-      <div className="pantalla-carga">
-        <p>Cargando…</p>
-      </div>
-    )
-  }
+
+  // Bienvenida: se ve al menos DURACION_BIENVENIDA_MS y hasta que haya datos;
+  // luego se desvanece (450 ms) y desaparece.
+  const [tiempoCumplido, setTiempoCumplido] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setTiempoCumplido(true), DURACION_BIENVENIDA_MS)
+    return () => clearTimeout(t)
+  }, [])
+  const bienvenidaSaliendo = tiempoCumplido && !cargando
+  const [bienvenidaFuera, setBienvenidaFuera] = useState(false)
+  useEffect(() => {
+    if (!bienvenidaSaliendo) return
+    const t = setTimeout(() => setBienvenidaFuera(true), 450)
+    return () => clearTimeout(t)
+  }, [bienvenidaSaliendo])
+  const bienvenida = !bienvenidaFuera && (
+    <Bienvenida
+      nombrePeña={config?.nombrePeña || undefined}
+      saliendo={bienvenidaSaliendo}
+      onSaltar={() => setTiempoCumplido(true)}
+    />
+  )
+
+  if (cargando) return bienvenida || <Bienvenida nombrePeña={config?.nombrePeña || undefined} />
 
   const nombrePeña = config?.nombrePeña || NOMBRE_PEÑA_POR_DEFECTO
   // peñista (localStorage) solo guarda {id, nombre} de cuando se eligió;
@@ -103,6 +124,7 @@ export default function App() {
     if (pantalla === 'admin') {
       return (
         <>
+          {bienvenida}
           <header className="barra-superior">
             <h1>{nombrePeña}</h1>
             <button onClick={() => setPantalla('convocatoria')}>Volver</button>
@@ -113,6 +135,7 @@ export default function App() {
     }
     return (
       <>
+        {bienvenida}
         <Identificacion nombrePeña={nombrePeña} peñistas={peñistas} onElegir={setPeñista} />
         <button
           className="boton boton-secundario"
@@ -127,6 +150,7 @@ export default function App() {
 
   return (
     <>
+      {bienvenida}
       <TopBar nombrePeña={nombrePeña} peñista={peñistaActual} onCambiarPeñista={() => setPeñista(null)} />
 
       <main className="contenido">
