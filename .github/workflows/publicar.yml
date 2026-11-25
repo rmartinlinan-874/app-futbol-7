@@ -1,0 +1,49 @@
+name: Publicar la app
+
+# Cada vez que se sube un cambio a "main", construye la app y la publica en la
+# rama gh-pages (la que sirve GitHub Pages). Sustituye a hacer
+# "npm run deploy" a mano desde un ordenador, aunque eso sigue funcionando.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "README.md"
+      - "firestore.rules"
+      - "scripts/notificaciones.mjs"
+      - ".github/workflows/notificaciones.yml"
+      - ".github/workflows/reglas.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publicar
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Comprobar la lógica
+        run: node scripts/smoke-test-logica.mjs
+
+      # Usa la configuración pública de .env.production
+      - run: npm run build
+
+      - name: Subir a la rama gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          commit_message: "Publicación automática"

@@ -1,0 +1,35 @@
+name: Desplegar reglas de Firestore
+
+# Cuando cambian las reglas de seguridad (firestore.rules), las sube al
+# proyecto Firebase con la misma cuenta de servicio que usan los avisos.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "firestore.rules"
+      - "firestore.indexes.json"
+  workflow_dispatch:
+
+concurrency:
+  group: reglas
+  cancel-in-progress: false
+
+jobs:
+  reglas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Credenciales de la cuenta de servicio
+        run: echo "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/cuenta.json"
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Desplegar reglas
+        run: npx --yes firebase-tools@14 deploy --only firestore:rules --project app-futbol-7 --non-interactive
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/cuenta.json
