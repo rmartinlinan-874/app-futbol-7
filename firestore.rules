@@ -42,11 +42,14 @@ service cloud.firestore {
       allow create: if pinValido();
       // Cambiar nombre/activo requiere PIN, pero subir tu foto o activar tus
       // propios avisos (o los de cualquiera, no hay cuentas reales) son
-      // acciones abiertas a cualquier peñista identificado: solo esos dos
-      // campos pueden cambiar sin PIN.
+      // acciones abiertas a cualquier peñista identificado: solo esos
+      // campos pueden cambiar sin PIN. fcmTokens es la lista de dispositivos
+      // con avisos (fcmToken, uno solo, es el formato antiguo).
       allow update: if pinValido() ||
         (estaAutenticado() &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fotoURL', 'fcmToken']));
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fotoURL', 'fcmToken', 'fcmTokens']) &&
+          (!('fcmTokens' in request.resource.data) ||
+            (request.resource.data.fcmTokens is list && request.resource.data.fcmTokens.size() <= 20)));
     }
 
     match /convocatorias/{convocatoriaId} {

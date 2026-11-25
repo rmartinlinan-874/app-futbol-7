@@ -14,8 +14,6 @@ export default function ConvocatoriaScreen({
   respuestas,
   invitados,
   eleccion,
-  convocatorias,
-  cargandoConvocatorias,
 }) {
   const [nombreInvitado, setNombreInvitado] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -101,8 +99,6 @@ export default function ConvocatoriaScreen({
         convocatoria={convocatoria}
         aforo={aforo}
         eleccion={eleccion}
-        convocatorias={convocatorias}
-        cargandoConvocatorias={cargandoConvocatorias}
       />
 
       <section className="contadores">

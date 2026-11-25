@@ -131,8 +131,6 @@ export default function App() {
             respuestas={respuestas}
             invitados={invitados}
             eleccion={eleccion}
-            convocatorias={convocatorias}
-            cargandoConvocatorias={cargandoTodas}
           />
         )}
 

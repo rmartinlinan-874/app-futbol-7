@@ -1,12 +1,13 @@
 /**
  * Elección de equipos por turnos entre los dos capitanes.
  *
- * capitanes = [primero, segundo] de la clasificación. El primero lleva el
- * equipo Blanco ('A') y el segundo el Amarillo ('B'); cada capitán ya está
- * en su equipo y no se elige.
+ * capitanes = [blanco, amarillo], sorteados al azar (ver encargados.js).
+ * capitanes[0] lleva el equipo Blanco ('A') y capitanes[1] el Amarillo ('B');
+ * cada capitán ya está en su equipo y no se elige.
  *
- * Orden de turnos: 2º, 1º, 1º y a partir de ahí alternos (2º, 1º, 2º, 1º…).
- * El 2º abre para compensar que el 1º elige dos seguidos.
+ * Orden de turnos: empieza el Amarillo (capitanes[1], que sale por sorteo),
+ * luego el Blanco elige dos seguidos y a partir de ahí alternos
+ * (Amarillo, Blanco, Amarillo…). Quien abre solo elige uno para compensar.
  */
 
 export const EQUIPO_DE_CAPITAN = ['A', 'B']
@@ -23,7 +24,7 @@ export function participantesDelPartido(aforo, peñistas) {
   ]
 }
 
-/** Índice (0 = 1º clasificado, 1 = 2º) del capitán que elige en el turno n (empezando en 0). */
+/** Índice (0 = capitán Blanco, 1 = capitán Amarillo, que abre) del capitán que elige en el turno n (empezando en 0). */
 export function capitanDelTurno(n) {
   if (n === 0) return 1
   if (n === 1 || n === 2) return 0

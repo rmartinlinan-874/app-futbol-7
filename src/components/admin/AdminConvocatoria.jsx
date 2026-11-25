@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AFORO_MAX, calcularAforo } from '../../lib/aforo'
-import { calcularClasificacion, calcularVecesEncargado } from '../../lib/points'
-import { elegirCapitanes } from '../../lib/encargados'
+import { sortearCapitanesAhora } from '../../lib/encargados'
 import { asignacionesDesdeEleccion, participantesDelPartido, NOMBRE_EQUIPO } from '../../lib/eleccion'
 import {
   confirmarInvitado,
@@ -33,21 +32,11 @@ export default function AdminConvocatoria({
   invitados,
   eleccion,
   peñistas,
-  convocatorias,
   pin,
 }) {
   const nombreDe = (id) => peñistas.find((p) => p.id === id)?.nombre ?? '—'
   const juegan = respuestas.filter((r) => r.juega)
   const aforo = calcularAforo({ respuestasJuego: juegan, invitados })
-
-  // Para elegir encargados se usa la clasificación y el historial de
-  // "veces encargado" de ANTES de esta convocatoria (si ya tuviera
-  // resultado o encargados propios, no deben influir en su propia elección).
-  const convocatoriasAnteriores = convocatorias.filter((c) => c.id !== idConvocatoria)
-  const puntosPorId = new Map(
-    calcularClasificacion(convocatoriasAnteriores, peñistas).map((c) => [c.id, c.puntos]),
-  )
-  const vecesEncargadoPorId = calcularVecesEncargado(convocatoriasAnteriores)
 
   const [sorteando, setSorteando] = useState(false)
   const [guardandoInvitado, setGuardandoInvitado] = useState(null)
@@ -76,12 +65,7 @@ export default function AdminConvocatoria({
   async function elegirEncargados() {
     setSorteando(true)
     try {
-      const elegidos = elegirCapitanes(
-        aforo.peñistasJuegan.map((r) => r.id),
-        puntosPorId,
-        vecesEncargadoPorId,
-        idConvocatoria,
-      )
+      const elegidos = sortearCapitanesAhora(aforo.peñistasJuegan.map((r) => r.id))
       await guardarEncargados(idConvocatoria, elegidos, pin)
     } finally {
       setSorteando(false)
@@ -230,13 +214,13 @@ export default function AdminConvocatoria({
       <section className="tarjeta">
         <h2 className="titulo-seccion">Encargados de montar los equipos</h2>
         <p className="subtitulo">
-          Los dos primeros de la clasificación entre los {aforo.peñistasJuegan.length} peñistas
-          confirmados (nunca invitados). En caso de empate a puntos, quien menos veces haya sido
-          encargado; si el empate persiste, por sorteo.
+          Salen al azar entre los {aforo.peñistasJuegan.length} peñistas confirmados (nunca invitados), y
+          también al azar quién empieza a elegir.
         </p>
         {convocatoria?.encargados?.length === 2 && (
           <p style={{ fontWeight: 600, marginTop: 8 }}>
-            {nombreDe(convocatoria.encargados[0])} y {nombreDe(convocatoria.encargados[1])}
+            {nombreDe(convocatoria.encargados[0])} ({NOMBRE_EQUIPO.A}) y {nombreDe(convocatoria.encargados[1])} (
+            {NOMBRE_EQUIPO.B}, empieza eligiendo)
           </p>
         )}
         <button
@@ -245,10 +229,10 @@ export default function AdminConvocatoria({
           disabled={sorteando || aforo.peñistasJuegan.length < 2}
           onClick={elegirEncargados}
         >
-          {convocatoria?.encargados?.length === 2 ? '🔁 Recalcular encargados' : '📋 Fijar encargados'}
+          {convocatoria?.encargados?.length === 2 ? '🎲 Volver a sortear' : '🎲 Sortear ahora'}
         </button>
         <p className="subtitulo" style={{ marginTop: 8 }}>
-          No hace falta pulsarlo: la app calcula los capitanes sola y ellos pueden empezar a elegir equipos en
+          No hace falta pulsarlo: la app sortea los capitanes sola y ellos pueden empezar a elegir equipos en
           cuanto quieran. Úsalo solo si quieres fijarlos antes de que empiece la elección.
         </p>
 

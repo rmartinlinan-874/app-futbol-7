@@ -41,11 +41,21 @@ function fechaMadrid() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(new Date())
 }
 
+// Cada peñista puede tener varios dispositivos (móvil, tablet, ordenador):
+// sus tokens van en la lista fcmTokens. fcmToken (uno solo) es el formato
+// antiguo y se sigue leyendo hasta que todos hayan abierto la app nueva.
+function destinatariosDe(d) {
+  const datos = d.data()
+  const tokens = new Set([...(datos.fcmTokens ?? []), datos.fcmToken].filter(Boolean))
+  return [...tokens].map((token) => ({ id: d.id, nombre: datos.nombre, token }))
+}
+
 async function destinatariosActivos() {
   const snap = await db.collection('penistas').where('activo', '==', true).get()
-  return snap.docs
-    .map((d) => ({ id: d.id, nombre: d.data().nombre, token: d.data().fcmToken }))
-    .filter((p) => p.token)
+  // Un mismo móvil puede estar guardado en dos peñistas (si alguien cambió de
+  // nombre en ese móvil): se le envía una sola vez.
+  const vistos = new Set()
+  return snap.docs.flatMap(destinatariosDe).filter((d) => !vistos.has(d.token) && vistos.add(d.token))
 }
 
 // Si FCM dice que un token ya no es válido (el navegador lo revocó, se borró
@@ -55,7 +65,9 @@ async function destinatariosActivos() {
 const ERRORES_TOKEN_MUERTO = new Set([
   'messaging/registration-token-not-registered',
   'messaging/invalid-registration-token',
-  'messaging/invalid-argument',
+  // OJO: 'messaging/invalid-argument' NO se trata como token muerto: también
+  // salta si el problema es el mensaje, y entonces borraría los tokens de
+  // todo el mundo de golpe.
 ])
 
 async function enviar(destinatarios, { titulo, cuerpo }) {
@@ -85,8 +97,12 @@ async function enviar(destinatarios, { titulo, cuerpo }) {
       const codigo = respuesta.error?.code ?? 'desconocido'
       console.log(`  Fallo para ${destinatario.nombre} (${destinatario.id}): ${codigo}`)
       if (ERRORES_TOKEN_MUERTO.has(codigo)) {
-        await db.doc(`penistas/${destinatario.id}`).update({ fcmToken: FieldValue.delete() })
-        console.log(`  Token muerto: borrado de ${destinatario.nombre}, se le volverá a pedir activar.`)
+        const ref = db.doc(`penistas/${destinatario.id}`)
+        const datos = (await ref.get()).data() ?? {}
+        const cambios = { fcmTokens: FieldValue.arrayRemove(destinatario.token) }
+        if (datos.fcmToken === destinatario.token) cambios.fcmToken = FieldValue.delete()
+        await ref.update(cambios)
+        console.log(`  Token muerto: quitado ese dispositivo de ${destinatario.nombre}.`)
       }
     }),
   )
@@ -179,14 +195,13 @@ async function avisoPrueba(nombre) {
     console.log(`No hay ningún peñista llamado "${nombre}".`)
     return
   }
-  const d = snap.docs[0]
-  const token = d.data().fcmToken
-  if (!token) {
-    console.log(`${nombre} no tiene avisos activados (sin fcmToken guardado).`)
+  const destinatarios = destinatariosDe(snap.docs[0])
+  if (destinatarios.length === 0) {
+    console.log(`${nombre} no tiene avisos activados (ningún dispositivo guardado).`)
     return
   }
-  console.log(`Enviando aviso de prueba a ${nombre}...`)
-  await enviar([{ id: d.id, nombre, token }], {
+  console.log(`Enviando aviso de prueba a ${nombre} (${destinatarios.length} dispositivo/s)...`)
+  await enviar(destinatarios, {
     titulo: '🔔 Prueba de avisos',
     cuerpo: 'Si ves esto, los avisos push te funcionan bien.',
   })

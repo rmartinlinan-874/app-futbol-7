@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { calcularAforo, AFORO_MAX, AFORO_MIN } from '../src/lib/aforo.js'
 import { calcularClasificacion, calcularVecesEncargado } from '../src/lib/points.js'
-import { elegirCapitanes, capitanesDeLaEleccion } from '../src/lib/encargados.js'
+import { sortearCapitanes, sortearCapitanesAhora, capitanesDeLaEleccion } from '../src/lib/encargados.js'
 import { capitanDelTurno, estadoEleccion, asignacionesDesdeEleccion } from '../src/lib/eleccion.js'
 import { idConvocatoriaActiva, lunesConvocatoriaActiva } from '../src/lib/dates.js'
 
@@ -86,7 +86,7 @@ assert.equal(porId.c.puntos, 1, 'Carlos no jugó pero tiene un ajuste manual net
 assert.equal(porId.a.partidosJugados, 2)
 console.log('OK: clasificación y puntos')
 
-// --- encargados: los 2 primeros de la clasificación, con desempates ---
+// --- encargados (capitanes): sorteo al azar ---
 const conEncargados = [
   ...convocatorias,
   { encargados: ['a', 'b'] },
@@ -98,49 +98,57 @@ assert.equal(veces.get('b'), 2)
 assert.equal(veces.get('c'), 1)
 console.log('OK: veces encargado')
 
-// Por puntos: Ana (3.5) y Bea (3) por delante de Carlos (0).
-const puntosPorId = new Map(clasificacion.map((c) => [c.id, c.puntos]))
-assert.deepEqual(
-  elegirCapitanes(['a', 'b', 'c'], puntosPorId, new Map()),
-  ['a', 'b'],
-  'los dos con más puntos',
-)
-
-// Empate a puntos: gana quien menos veces haya sido encargado.
-const puntosEmpatados = new Map([['x', 5], ['y', 5], ['z', 5]])
-const vecesDesempate = new Map([['x', 2], ['y', 0], ['z', 1]])
-assert.deepEqual(
-  elegirCapitanes(['x', 'y', 'z'], puntosEmpatados, vecesDesempate),
-  ['y', 'z'],
-  'con puntos iguales, ganan los que menos veces han sido encargados',
-)
-
-// Empate total (puntos y veces): sale un sorteo válido entre los empatados,
-// y siempre el mismo para la misma convocatoria (todos los móviles coinciden).
-const elegidosPorSorteo = elegirCapitanes(['x', 'y', 'z'], puntosEmpatados, new Map(), '2026-11-16')
-assert.equal(elegidosPorSorteo.length, 2)
-assert.equal(elegidosPorSorteo.every((id) => ['x', 'y', 'z'].includes(id)), true)
-assert.notEqual(elegidosPorSorteo[0], elegidosPorSorteo[1])
+// Sorteo automático: dos capitanes distintos de entre los candidatos, y
+// siempre los mismos (y en el mismo orden) para la misma convocatoria.
+const candidatos = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+const sorteo = sortearCapitanes(candidatos, '2026-11-30')
+assert.equal(sorteo.length, 2)
+assert.notEqual(sorteo[0], sorteo[1])
+assert.equal(sorteo.every((id) => candidatos.includes(id)), true)
 for (let i = 0; i < 20; i++) {
-  assert.deepEqual(
-    elegirCapitanes(['z', 'x', 'y'], puntosEmpatados, new Map(), '2026-11-16'),
-    elegidosPorSorteo,
-    'el sorteo de desempate es fijo para la misma convocatoria',
-  )
+  assert.deepEqual(sortearCapitanes([...candidatos].reverse(), '2026-11-30'), sorteo, 'fijo para la misma convocatoria')
 }
+assert.deepEqual(sortearCapitanes(['a'], '2026-11-30'), [], 'con uno solo no hay sorteo')
+
+// Es aleatorio de verdad a lo largo de las semanas: todos salen capitanes
+// alguna vez, y unas veces empieza uno y otras el otro.
+const vecesCapitan = new Map()
+const vecesEmpieza = new Map()
+let semanas = 0
+for (let d = new Date(2026, 0, 5); d.getFullYear() < 2031; d.setDate(d.getDate() + 7)) {
+  const id = d.toISOString().slice(0, 10)
+  const [blanco, amarillo] = sortearCapitanes(candidatos, id)
+  for (const c of [blanco, amarillo]) vecesCapitan.set(c, (vecesCapitan.get(c) ?? 0) + 1)
+  vecesEmpieza.set(amarillo, (vecesEmpieza.get(amarillo) ?? 0) + 1)
+  semanas++
+}
+for (const c of candidatos) {
+  const v = vecesCapitan.get(c) ?? 0
+  assert.ok(v > semanas * 0.12 && v < semanas * 0.38, `reparto razonable de capitanías para ${c}: ${v}/${semanas}`)
+  assert.ok((vecesEmpieza.get(c) ?? 0) > 0, `${c} empieza alguna vez`)
+}
+
+// Que se apunte alguien nuevo solo cambia los capitanes si le toca a él.
+const conNuevo = sortearCapitanes([...candidatos, 'z'], '2026-11-30')
+assert.ok(conNuevo.includes('z') || conNuevo.every((id) => sorteo.includes(id)), 'no se re-sortea todo')
+
+// Sorteo del botón del admin: dos distintos de la lista.
+const delAdmin = sortearCapitanesAhora(candidatos)
+assert.equal(new Set(delAdmin).size, 2)
+assert.equal(delAdmin.every((id) => candidatos.includes(id)), true)
 console.log('OK: elección de encargados')
 
 // --- elección de equipos por turnos ---
 assert.deepEqual(
   Array.from({ length: 9 }, (_, n) => capitanDelTurno(n) + 1),
   [2, 1, 1, 2, 1, 2, 1, 2, 1],
-  'orden: 2º, 1º, 1º y luego alternos',
+  'orden: abre el Amarillo, luego el Blanco dos y alternos',
 )
 
 const participantesPartido = ['c1', 'c2', 'j1', 'j2', 'j3', 'j4', 'j5'].map((id) => ({ id, tipo: 'peñista', nombre: id }))
 const capitanesPartido = ['c1', 'c2']
 let e = estadoEleccion({ capitanes: capitanesPartido, elecciones: [], participantes: participantesPartido })
-assert.equal(e.idCapitanTurno, 'c2', 'empieza el 2º')
+assert.equal(e.idCapitanTurno, 'c2', 'empieza el capitán Amarillo')
 assert.equal(e.equipoTurno, 'B')
 assert.equal(e.libres.length, 5, 'los capitanes no se eligen')
 assert.equal(e.terminada, false)
@@ -153,7 +161,7 @@ const eleccionesPartido = [
   { id: 'j5', equipo: 'A', porId: 'c1' },
 ]
 e = estadoEleccion({ capitanes: capitanesPartido, elecciones: eleccionesPartido.slice(0, 3), participantes: participantesPartido })
-assert.equal(e.idCapitanTurno, 'c2', 'tras 2º, 1º, 1º vuelve a tocar al 2º')
+assert.equal(e.idCapitanTurno, 'c2', 'tras Amarillo, Blanco, Blanco vuelve a tocar al Amarillo')
 e = estadoEleccion({ capitanes: capitanesPartido, elecciones: eleccionesPartido, participantes: participantesPartido })
 assert.equal(e.terminada, true)
 assert.deepEqual(e.equipoA.map((m) => m.id), ['c1', 'j2', 'j3', 'j5'])
@@ -181,8 +189,8 @@ assert.deepEqual(
 )
 assert.deepEqual(
   capitanesDeLaEleccion({ ...baseCapitanes, eleccion: null, encargadosAdmin: ['c', 'zz'], candidatosIds: ['a', 'b', 'c'] }).capitanes,
-  ['a', 'b'],
-  'si un encargado del admin ya no juega, se usan los automáticos',
+  sortearCapitanes(['a', 'b', 'c'], '2026-11-16'),
+  'si un encargado del admin ya no juega, se usa el sorteo automático',
 )
 assert.equal(capitanesDeLaEleccion({ ...baseCapitanes, eleccion: null, candidatosIds: ['a'] }), null)
 console.log('OK: elección de equipos por turnos')

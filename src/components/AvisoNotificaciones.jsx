@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { avisosDisponibles, activarAvisos } from '../lib/notificaciones'
+import { avisosDisponibles, activarAvisos, renovarAvisosEnSilencio } from '../lib/notificaciones'
 
 const CLAVE_DESCARTADO = 'apppena_avisos_descartado'
 
@@ -17,20 +17,43 @@ export default function AvisoNotificaciones({ peñista }) {
   // peñista (o nunca se guardó para este), hay que volver a mostrar el
   // aviso y a activar, aunque el navegador ya diga "granted".
   const [activadoLocal, setActivadoLocal] = useState(false)
-  const activado = activadoLocal || Boolean(peñista.fcmToken)
+  // Mientras se intenta renovar el token en silencio no se enseña el aviso,
+  // para que no "parpadee" a quien ya tiene el permiso concedido.
+  const [renovando, setRenovando] = useState(true)
+  const activado = activadoLocal
   const [error, setError] = useState(false)
 
   useEffect(() => {
     avisosDisponibles().then(setDisponible)
   }, [])
 
-  if (!disponible || descartado || activado) return null
+  // Al abrir la app (o al cambiar de peñista en este móvil), si el permiso ya
+  // está concedido se renueva el token sin preguntar nada. Solo si eso no
+  // basta se muestra el aviso de "Activa los avisos".
+  const tokensGuardados = peñista.fcmTokens ?? []
+  useEffect(() => {
+    let cancelado = false
+    setRenovando(true)
+    renovarAvisosEnSilencio(peñista.id, tokensGuardados).then((ok) => {
+      if (cancelado) return
+      setActivadoLocal(ok)
+      setRenovando(false)
+    })
+    return () => {
+      cancelado = true
+    }
+    // Solo al montar o cambiar de peñista: si se reaccionara a cada cambio de
+    // tokensGuardados, la propia escritura volvería a lanzar la renovación.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [peñista.id])
+
+  if (!disponible || descartado || activado || renovando) return null
 
   async function activar() {
     setActivando(true)
     setError(false)
     try {
-      const ok = await activarAvisos(peñista.id)
+      const ok = await activarAvisos(peñista.id, tokensGuardados)
       if (ok) setActivadoLocal(true)
       else setError(true)
     } catch {

@@ -44,8 +44,6 @@ export default function EleccionEquipos({
   convocatoria,
   aforo,
   eleccion,
-  convocatorias,
-  cargandoConvocatorias,
 }) {
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState(null)
@@ -68,17 +66,11 @@ export default function EleccionEquipos({
     )
   }
 
-  // Los capitanes automáticos dependen de la clasificación: hasta que no
-  // estén cargadas todas las convocatorias no se pueden calcular bien.
-  if (!yaEmpezada && cargandoConvocatorias) return null
-
   const datosCapitanes = capitanesDeLaEleccion({
     eleccion,
     encargadosAdmin: convocatoria?.encargados,
     idConvocatoria,
     candidatosIds,
-    convocatorias,
-    peñistas,
   })
   if (!datosCapitanes) return null
 
@@ -146,8 +138,11 @@ export default function EleccionEquipos({
     <section className="tarjeta">
       <h2 className="titulo-seccion">Elección de equipos</h2>
       <p className="subtitulo">
-        Capitanes: {nombreDe(capitanes[0])} ({NOMBRE_EQUIPO.A}) y {nombreDe(capitanes[1])} ({NOMBRE_EQUIPO.B}).
-        {!fijados && ' Son provisionales hasta la primera elección: si se apunta alguien mejor clasificado, cambiarán.'}
+        🎲 Capitanes sorteados: <strong>{nombreDe(capitanes[0])}</strong> ({NOMBRE_EQUIPO.A}) y{' '}
+        <strong>{nombreDe(capitanes[1])}</strong> ({NOMBRE_EQUIPO.B}). Empieza eligiendo{' '}
+        <strong>{nombreDe(capitanes[1])}</strong>.
+        {!fijados &&
+          ' Son provisionales hasta la primera elección: si alguien se apunta o se borra, el sorteo puede cambiar.'}
       </p>
 
       {aviso && <div style={{ marginTop: 10 }}>{aviso}</div>}
