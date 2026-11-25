@@ -18,7 +18,7 @@ import { CartelObras, FirmaWilly, useModoWilly } from './components/Willy'
 import Bienvenida from './components/Bienvenida'
 
 // Tiempo mínimo que se ve la pantalla de bienvenida con el logo al abrir la app.
-const DURACION_BIENVENIDA_MS = 5500
+const DURACION_BIENVENIDA_MS = 7000
 import './App.css'
 
 const NOMBRE_PEÑA_POR_DEFECTO = 'Mi Peña'
