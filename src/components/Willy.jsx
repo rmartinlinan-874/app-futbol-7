@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { lanzarConfeti } from '../lib/confeti'
+import { activarSonidos, aplauso, precargarSonidos, sonidosActivados } from '../lib/sonidos'
 
 const CLAVE_MODO = 'apppena_modo_willy'
 const CLAVE_OBRAS = 'apppena_obras_willy_vistas'
@@ -33,6 +34,15 @@ export function useModoWilly() {
 
 /** Firma al pie de cada pantalla, con el botón del Modo Willy. */
 export function FirmaWilly({ modoWilly, onCambiarModo }) {
+  const [sonido, setSonido] = useState(sonidosActivados)
+  useEffect(() => {
+    precargarSonidos()
+  }, [])
+  function alternarSonido() {
+    activarSonidos(!sonido)
+    setSonido(!sonido)
+    if (!sonido) aplauso()
+  }
   function alternar() {
     if (!modoWilly) lanzarConfeti()
     onCambiarModo(!modoWilly)
@@ -40,9 +50,19 @@ export function FirmaWilly({ modoWilly, onCambiarModo }) {
   return (
     <div className="firma-willy">
       <span>🎨 Decoración: Willy. Reclamaciones, a él.</span>
-      <button className="boton-willy" onClick={alternar}>
-        {modoWilly ? '😌 Modo normal' : '🦄 Modo Willy'}
-      </button>
+      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+        <button
+          className="boton-sonido"
+          onClick={alternarSonido}
+          aria-label={sonido ? 'Quitar sonidos' : 'Poner sonidos'}
+          title={sonido ? 'Quitar sonidos' : 'Poner sonidos'}
+        >
+          {sonido ? '🔊' : '🔇'}
+        </button>
+        <button className="boton-willy" onClick={alternar}>
+          {modoWilly ? '😌 Modo normal' : '🦄 Modo Willy'}
+        </button>
+      </div>
     </div>
   )
 }
