@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { vigilarVersionNueva } from './lib/version'
 
 const FIREBASE_CONFIGURADO =
   import.meta.env.VITE_USE_EMULATOR === 'true' || Boolean(import.meta.env.VITE_FIREBASE_PROJECT_ID)
@@ -19,6 +20,8 @@ function ConfiguracionFaltante() {
     </div>
   )
 }
+
+vigilarVersionNueva()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>{FIREBASE_CONFIGURADO ? <App /> : <ConfiguracionFaltante />}</StrictMode>,
