@@ -8,6 +8,7 @@ import EleccionEquipos from './EleccionEquipos'
 import CenaNavidad from './CenaNavidad'
 import { cenaAbierta, respuestaCompleta, resumenCena } from '../lib/cena'
 import { lanzarConfeti, modoWillyActivo } from '../lib/confeti'
+import { aplauso, abucheo } from '../lib/sonidos'
 
 export default function ConvocatoriaScreen({
   idConvocatoria,
@@ -35,6 +36,10 @@ export default function ConvocatoriaScreen({
   const pendientes = activos.filter((p) => !respuestas.some((r) => r.id === p.id))
 
   async function elegir(juega) {
+    // El sonido va antes de cualquier await: los navegadores solo dejan sonar
+    // audio directamente dentro del toque del usuario.
+    if (juega) aplauso()
+    else abucheo()
     setEnviando(true)
     try {
       await marcarRespuesta(idConvocatoria, peñista.id, juega)
