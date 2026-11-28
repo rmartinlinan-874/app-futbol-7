@@ -54,10 +54,10 @@ export default function CenaExterna({ nombrePeña, respuestasCena, peñistas }) 
       </header>
       <main className="contenido">
         <section className="tarjeta">
-          <h2 className="titulo-seccion">👋 ¡Hola, veterano!</h2>
+          <h2 className="titulo-seccion">🎄 ¡Estás invitado!</h2>
           <p className="subtitulo" style={{ margin: 0 }}>
-            Aunque ya no juegues con nosotros, estás invitado a la cena de Navidad de la peña. Escribe tu
-            nombre y dinos si vienes.
+            La peña celebra su cena de Navidad y nos encantaría que vinieras. Escribe tu nombre y dinos si te
+            apuntas.
           </p>
         </section>
 
