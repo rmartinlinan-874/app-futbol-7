@@ -73,6 +73,37 @@ export function respuestaCompleta(respuesta, cena = CENA) {
   )
 }
 
+/**
+ * Antiguos peñistas (y amigos) se apuntan con el enlace de la cena
+ * (…/app-futbol-7/?cena) escribiendo su nombre. Su respuesta se guarda con un
+ * id que empieza por "ext-", el nombre que escribieron y externo: true.
+ */
+export const LARGO_MAX_NOMBRE = 40
+
+export function limpiarNombre(nombre) {
+  return String(nombre ?? '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, LARGO_MAX_NOMBRE)
+}
+
+export function nombreValido(nombre) {
+  return limpiarNombre(nombre).length >= 2
+}
+
+export function nuevoIdExterno() {
+  const aleatorio =
+    typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`
+  return `ext-${aleatorio}`
+}
+
+/** Nombre para mostrar de una respuesta (peñista de la lista o externo). */
+export function nombreDeRespuesta(respuesta, peñistas) {
+  return peñistas.find((p) => p.id === respuesta.id)?.nombre ?? respuesta.nombre ?? '—'
+}
+
 export function nombrePlato(id, cena = CENA) {
   return [...cena.entrantes, ...cena.principales].find((p) => p.id === id)?.nombre ?? id
 }

@@ -180,12 +180,19 @@ export async function cambiarConfig(cambios, pin) {
 
 // --- Cena (ver lib/cena.js) ---
 
-export async function guardarRespuestaCena(idCena, peñistaId, { asiste, entrantes = [], principal = null }) {
+export async function guardarRespuestaCena(
+  idCena,
+  peñistaId,
+  { asiste, entrantes = [], principal = null, nombre = null },
+) {
   const va = asiste === true
   await setDoc(doc(db, 'cenas', idCena, 'respuestas', peñistaId), {
     asiste,
     entrantes: va ? entrantes : [],
     principal: va ? principal : null,
+    // Solo para los que se apuntan con el enlace de la cena (no están en la
+    // lista de peñistas): se guarda el nombre que escribieron.
+    ...(nombre ? { nombre, externo: true } : {}),
     timestamp: serverTimestamp(),
   })
 }

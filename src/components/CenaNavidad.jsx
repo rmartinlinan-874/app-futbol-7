@@ -1,5 +1,13 @@
 import { useState } from 'react'
-import { CENA, CONSULTANDO, nombrePlato, respuestaCompleta } from '../lib/cena'
+import {
+  CENA,
+  CONSULTANDO,
+  LARGO_MAX_NOMBRE,
+  limpiarNombre,
+  nombrePlato,
+  nombreValido,
+  respuestaCompleta,
+} from '../lib/cena'
 import { formatearFechaLarga } from '../lib/dates'
 import { guardarRespuestaCena } from '../lib/actions'
 import { lanzarConfeti } from '../lib/confeti'
@@ -9,8 +17,11 @@ import { lanzarConfeti } from '../lib/confeti'
  * formulario (y ConvocatoriaScreen no le deja marcar si juega hasta que lo
  * haga). Si ya respondió, enseña su elección en pequeño con un botón para
  * cambiarla.
+ *
+ * Con externo (enlace de la cena para antiguos peñistas) además pide el
+ * nombre y no menciona el partido.
  */
-export default function CenaNavidad({ peñista, miRespuesta, resumen }) {
+export default function CenaNavidad({ peñista, miRespuesta, resumen, externo = false }) {
   const completa = respuestaCompleta(miRespuesta)
   const [editando, setEditando] = useState(false)
   // Quien aún lo está consultando en casa ve el formulario abierto para que
@@ -41,18 +52,24 @@ export default function CenaNavidad({ peñista, miRespuesta, resumen }) {
           inicial={miRespuesta}
           puedeCancelar={completa && !consultando}
           consultando={consultando}
+          externo={externo}
           onTerminar={() => setEditando(false)}
         />
       ) : (
-        <ResumenMiCena respuesta={miRespuesta} onCambiar={() => setEditando(true)} />
+        <ResumenMiCena respuesta={miRespuesta} externo={externo} onCambiar={() => setEditando(true)} />
       )}
     </section>
   )
 }
 
-function ResumenMiCena({ respuesta, onCambiar }) {
+function ResumenMiCena({ respuesta, externo, onCambiar }) {
   return (
     <div style={{ marginTop: 10 }}>
+      {externo && respuesta.nombre && (
+        <p className="meta" style={{ margin: '0 0 6px' }}>
+          Apuntado como <strong>{respuesta.nombre}</strong>
+        </p>
+      )}
       {respuesta.asiste ? (
         <>
           <p style={{ margin: '0 0 4px', fontWeight: 600 }}>✅ Vas a la cena</p>
@@ -71,7 +88,8 @@ function ResumenMiCena({ respuesta, onCambiar }) {
   )
 }
 
-function FormularioCena({ peñista, inicial, puedeCancelar, consultando, onTerminar }) {
+function FormularioCena({ peñista, inicial, puedeCancelar, consultando, externo, onTerminar }) {
+  const [nombre, setNombre] = useState(inicial?.nombre ?? '')
   const [asiste, setAsiste] = useState(inicial?.asiste ?? null)
   const [entrantes, setEntrantes] = useState(inicial?.entrantes ?? [])
   const [principal, setPrincipal] = useState(inicial?.principal ?? null)
@@ -80,7 +98,8 @@ function FormularioCena({ peñista, inicial, puedeCancelar, consultando, onTermi
 
   const lleno = entrantes.length >= CENA.maxEntrantes
   const listo =
-    asiste === false || asiste === CONSULTANDO || (asiste === true && entrantes.length >= 1 && principal)
+    (!externo || nombreValido(nombre)) &&
+    (asiste === false || asiste === CONSULTANDO || (asiste === true && entrantes.length >= 1 && principal))
 
   function alternarEntrante(id) {
     setEntrantes((actual) =>
@@ -92,7 +111,12 @@ function FormularioCena({ peñista, inicial, puedeCancelar, consultando, onTermi
     setGuardando(true)
     setError(null)
     try {
-      await guardarRespuestaCena(CENA.id, peñista.id, { asiste, entrantes, principal })
+      await guardarRespuestaCena(CENA.id, peñista.id, {
+        asiste,
+        entrantes,
+        principal,
+        nombre: externo ? limpiarNombre(nombre) : null,
+      })
       if (asiste === true) lanzarConfeti()
       onTerminar()
     } catch {
@@ -104,13 +128,35 @@ function FormularioCena({ peñista, inicial, puedeCancelar, consultando, onTermi
 
   return (
     <div style={{ marginTop: 12 }}>
+      {externo && (
+        <>
+          <label className="campo-label" htmlFor="nombre-cena">
+            Tu nombre
+          </label>
+          <input
+            id="nombre-cena"
+            className="campo-texto"
+            type="text"
+            autoComplete="name"
+            maxLength={LARGO_MAX_NOMBRE}
+            placeholder="Nombre y, si quieres, apellido o mote"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            disabled={guardando}
+            style={{ marginBottom: 14 }}
+          />
+        </>
+      )}
+
       {consultando ? (
         <p className="aviso ambar" style={{ marginBottom: 10 }}>
-          🏠 Apuntado como «aún no le he preguntado a mi mujer». Ya puedes apuntarte al partido, pero cuando
-          tengas respuesta, dinos aquí si vienes.
+          {externo
+            ? '🏠 Apuntado como «aún no le he preguntado a mi mujer». Cuando tengas respuesta, vuelve a abrir este enlace y dinos si vienes.'
+            : '🏠 Apuntado como «aún no le he preguntado a mi mujer». Ya puedes apuntarte al partido, pero cuando tengas respuesta, dinos aquí si vienes.'}
         </p>
       ) : (
-        !puedeCancelar && (
+        !puedeCancelar &&
+        !externo && (
           <p className="aviso ambar" style={{ marginBottom: 10 }}>
             Antes de apuntarte al partido, dinos si vienes a la cena.
           </p>
@@ -226,7 +272,12 @@ function FormularioCena({ peñista, inicial, puedeCancelar, consultando, onTermi
           </button>
         )}
       </div>
-      {asiste === true && !listo && (
+      {externo && !nombreValido(nombre) && asiste !== null && (
+        <p className="meta" style={{ marginTop: 6 }}>
+          Escribe tu nombre arriba para que sepamos quién eres.
+        </p>
+      )}
+      {asiste === true && (entrantes.length === 0 || !principal) && (
         <p className="meta" style={{ marginTop: 6 }}>
           Te falta {entrantes.length === 0 ? 'votar al menos un entrante' : ''}
           {entrantes.length === 0 && !principal ? ' y ' : ''}

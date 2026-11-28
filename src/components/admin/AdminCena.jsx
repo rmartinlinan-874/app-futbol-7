@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { CENA, nombrePlato, resumenCena } from '../../lib/cena'
+import { CENA, CONSULTANDO, nombreDeRespuesta, nombrePlato, resumenCena } from '../../lib/cena'
+import { borrarRespuestaCena } from '../../lib/actions'
 import { formatearFechaLarga } from '../../lib/dates'
 
-function textoParaRestaurante(resumen, nombreDe) {
+function textoParaRestaurante(resumen, nombrePlano) {
   const lineas = [
     `${CENA.titulo} · ${formatearFechaLarga(CENA.fecha)}`,
     `Comensales: ${resumen.van.length}`,
@@ -21,18 +22,47 @@ function textoParaRestaurante(resumen, nombreDe) {
 
 export default function AdminCena({ respuestasCena, peñistas }) {
   const [copiado, setCopiado] = useState(false)
-  const nombreDe = (id) => peñistas.find((p) => p.id === id)?.nombre ?? '—'
+  const [enlaceCopiado, setEnlaceCopiado] = useState(false)
+  const nombreDe = (id) => {
+    const r = respuestasCena.find((x) => x.id === id) ?? { id }
+    return nombreDeRespuesta(r, peñistas) + (r.externo ? ' (antiguo)' : '')
+  }
+  // Para el texto del restaurante, sin la etiqueta "(antiguo)".
+  const nombrePlano = (id) => nombreDeRespuesta(respuestasCena.find((x) => x.id === id) ?? { id }, peñistas)
+  const externos = respuestasCena.filter((r) => r.externo)
+  const enlaceCena = `${window.location.origin}${import.meta.env.BASE_URL}?cena`
+
+  async function copiarEnlace() {
+    try {
+      await navigator.clipboard.writeText(enlaceCena)
+      setEnlaceCopiado(true)
+      setTimeout(() => setEnlaceCopiado(false), 2500)
+    } catch {
+      window.prompt('Copia el enlace:', enlaceCena)
+    }
+  }
+
+  async function borrar(r) {
+    if (!window.confirm(`¿Borrar a ${r.nombre} de la cena?`)) return
+    await borrarRespuestaCena(CENA.id, r.id)
+  }
+
+  function estado(r) {
+    if (r.asiste === true) return `✅ va · ${nombrePlato(r.principal)}`
+    if (r.asiste === CONSULTANDO) return '🏠 aún no le ha preguntado a su mujer'
+    return '😢 no va'
+  }
   const resumen = resumenCena(respuestasCena, peñistas)
   const maxVotos = Math.max(1, ...resumen.votos.map((v) => v.votos))
   const ganadores = new Set(resumen.entrantesGanadores.map((e) => e.id))
 
   async function copiar() {
     try {
-      await navigator.clipboard.writeText(textoParaRestaurante(resumen, nombreDe))
+      await navigator.clipboard.writeText(textoParaRestaurante(resumen, nombrePlano))
       setCopiado(true)
       setTimeout(() => setCopiado(false), 2500)
     } catch {
-      window.prompt('Copia el resumen:', textoParaRestaurante(resumen, nombreDe))
+      window.prompt('Copia el resumen:', textoParaRestaurante(resumen, nombrePlano))
     }
   }
 
@@ -68,6 +98,39 @@ export default function AdminCena({ respuestasCena, peñistas }) {
         <button className="boton boton-primario boton-bloque" style={{ marginTop: 12 }} onClick={copiar}>
           {copiado ? '✅ Copiado' : '📋 Copiar resumen para el restaurante'}
         </button>
+      </section>
+
+      <section className="tarjeta">
+        <h2 className="titulo-seccion">👋 Antiguos peñistas</h2>
+        <p className="subtitulo">
+          Pásales este enlace por WhatsApp: abre la app solo con la cena, escriben su nombre y eligen sus platos.
+        </p>
+        <p className="meta" style={{ wordBreak: 'break-all', margin: '6px 0 10px' }}>
+          {enlaceCena}
+        </p>
+        <button className="boton boton-secundario boton-bloque" onClick={copiarEnlace}>
+          {enlaceCopiado ? '✅ Enlace copiado' : '🔗 Copiar enlace de la cena'}
+        </button>
+        {externos.length > 0 && (
+          <ul className="lista" style={{ marginTop: 12 }}>
+            {externos.map((r) => (
+              <li key={r.id} className="lista-item" style={{ alignItems: 'flex-start' }}>
+                <div>
+                  <strong>{r.nombre}</strong>
+                  <div className="meta">{estado(r)}</div>
+                </div>
+                <button
+                  className="boton boton-secundario"
+                  style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                  onClick={() => borrar(r)}
+                  aria-label={`Borrar a ${r.nombre}`}
+                >
+                  🗑️
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className="tarjeta">

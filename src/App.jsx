@@ -16,12 +16,16 @@ import AdminLoginScreen from './components/AdminLoginScreen'
 import AdminScreen from './components/admin/AdminScreen'
 import { CartelObras, FirmaWilly, useModoWilly } from './components/Willy'
 import Bienvenida from './components/Bienvenida'
+import CenaExterna from './components/CenaExterna'
 
 // Tiempo mínimo que se ve la pantalla de bienvenida con el logo al abrir la app.
 const DURACION_BIENVENIDA_MS = 7000
 import './App.css'
 
 const NOMBRE_PEÑA_POR_DEFECTO = 'Mi Peña'
+
+// Enlace de la cena para antiguos peñistas: …/app-futbol-7/?cena
+const MODO_CENA = new URLSearchParams(window.location.search).has('cena')
 const PIN_POR_DEFECTO = '1234'
 
 export default function App() {
@@ -67,7 +71,11 @@ export default function App() {
   // Mientras la cena esté abierta hay que esperar a sus respuestas para no
   // enseñar un momento el formulario a quien ya respondió.
   const cargando =
-    !authListo || cargandoConfig || cargandoPeñistas || cargandoConvocatoria || (cenaAbierta() && cargandoCena)
+    !authListo ||
+    cargandoConfig ||
+    cargandoPeñistas ||
+    cargandoConvocatoria ||
+    ((cenaAbierta() || MODO_CENA) && cargandoCena)
 
   // Bienvenida: se ve al menos DURACION_BIENVENIDA_MS y hasta que haya datos;
   // luego se desvanece (450 ms) y desaparece.
@@ -97,6 +105,15 @@ export default function App() {
   // peñista (localStorage) solo guarda {id, nombre} de cuando se eligió;
   // aquí se cruza con la lista en vivo para tener también la foto actual.
   const peñistaActual = peñista ? (peñistas.find((p) => p.id === peñista.id) ?? peñista) : null
+
+  if (MODO_CENA) {
+    return (
+      <>
+        {bienvenida}
+        <CenaExterna nombrePeña={nombrePeña} respuestasCena={respuestasCena} peñistas={peñistas} />
+      </>
+    )
+  }
 
   const panelAdmin = esAdmin ? (
     <AdminScreen

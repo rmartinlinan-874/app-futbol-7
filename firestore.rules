@@ -59,7 +59,12 @@ service cloud.firestore {
       allow read: if estaAutenticado();
       allow delete: if estaAutenticado();
       allow create, update: if estaAutenticado() &&
-        request.resource.data.keys().hasOnly(['asiste', 'entrantes', 'principal', 'timestamp']) &&
+        request.resource.data.keys().hasOnly(['asiste', 'entrantes', 'principal', 'timestamp', 'nombre', 'externo']) &&
+        // Los que se apuntan con el enlace de la cena guardan su nombre.
+        (!('nombre' in request.resource.data) ||
+          (request.resource.data.nombre is string &&
+            request.resource.data.nombre.size() >= 2 &&
+            request.resource.data.nombre.size() <= 40)) &&
         (request.resource.data.asiste is bool || request.resource.data.asiste == 'consultando') &&
         request.resource.data.entrantes is list &&
         request.resource.data.entrantes.size() <= 8 &&
